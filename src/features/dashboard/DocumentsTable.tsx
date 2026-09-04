@@ -7,6 +7,7 @@
 import { confidenceBand, documentConfidence, flaggedFields, lane } from '../../domain/derive';
 import { maskPhone } from '../../domain/derive';
 import { confidence as fmtConfidence, ago } from '../../lib/format';
+import { documentTypeLabel, FIELD_LABEL } from '../../lib/labels';
 import { MarginMark, StatusMark } from './StatusMark';
 import type { SortKey } from '../../app/search';
 import type { Document } from '../../domain/types';
@@ -30,23 +31,6 @@ const BAND_LABEL = {
   review_required: 'Review required',
 } as const;
 
-const TYPE_LABEL: Record<string, string> = {
-  enrollment: 'Enrollment',
-  medical_intake: 'Medical intake',
-  id_scan: 'ID scan',
-  handwritten_note: 'Handwritten note',
-  unknown: 'Unknown',
-};
-
-const FIELD_LABEL: Record<string, string> = {
-  documentType: 'type',
-  personName: 'name',
-  phone: 'phone',
-  location: 'location',
-  programName: 'programme',
-  date: 'date',
-};
-
 /**
  * The two raw axes, kept visible beneath the lane. The lane says what to do; this says why.
  * A flagged document names the field that flagged it, because "needs review" beside a
@@ -61,7 +45,7 @@ function rawPair(doc: Document): string {
     const flagged = flaggedFields(doc.extraction);
     parts.push(
       flagged.length === 1
-        ? `${FIELD_LABEL[flagged[0]] ?? flagged[0]} ${doc.extraction[flagged[0]].status}`
+        ? `${FIELD_LABEL[flagged[0]].toLowerCase()} ${doc.extraction[flagged[0]].status}`
         : `${flagged.length} fields flagged`
     );
   } else if (doc.reviewStatus !== 'not_required') {
@@ -205,6 +189,7 @@ export function DocumentsTable({
                 <td className={TD}>
                   <button
                     type="button"
+                    data-doc-id={doc.id}
                     className="text-left underline underline-offset-2 hover:text-processing"
                     onClick={() => onOpen(doc.id)}
                   >
@@ -213,7 +198,7 @@ export function DocumentsTable({
                 </td>
                 {/* Blank, never a dash: an unprocessed document has no type yet and the state
                     column already says why. A dash would read as "we looked and found nothing". */}
-                <td className={TD}>{TYPE_LABEL[doc.extraction?.documentType.value ?? ''] ?? ''}</td>
+                <td className={TD}>{documentTypeLabel(doc.extraction?.documentType.value)}</td>
                 <td className={TD}>
                   <StatusMark lane={bucket} />
                   <span className="block text-[11px] text-ink-muted">{rawPair(doc)}</span>

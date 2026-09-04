@@ -78,11 +78,30 @@ export function transition(doc: Document, action: Action): Document {
     }
 
     case 'reject':
+      // Already-rejected is refused as well as confirmed. Spec §2 guards only on `confirmed`,
+      // but a reject that changes nothing is not a transition, and `confirm` is already refused
+      // the same way. Without this the UI offers a Reject button on a rejected document, since
+      // it reads its affordances from `can()`.
       if (
         (doc.status !== 'completed' && doc.status !== 'failed') ||
-        doc.reviewStatus === 'confirmed'
+        doc.reviewStatus === 'confirmed' ||
+        doc.reviewStatus === 'rejected'
       )
         throw new IllegalTransition(action.type, doc);
       return { ...doc, reviewStatus: 'rejected' };
+  }
+}
+
+/**
+ * Whether an action is currently legal. The UI uses this to decide which buttons exist, so an
+ * affordance can never be offered for a move the server would reject with a 409 - the guard is
+ * read from the same table that enforces it rather than restated in a component.
+ */
+export function can(doc: Document, action: Action['type']): boolean {
+  try {
+    transition(doc, { type: action, at: '', field: 'personName', value: '' } as Action);
+    return true;
+  } catch {
+    return false;
   }
 }

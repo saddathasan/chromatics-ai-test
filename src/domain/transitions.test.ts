@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { IllegalTransition, transition } from './transitions';
+import { can, IllegalTransition, transition } from './transitions';
 import type { Document, ProcessingError } from './types';
 
 const base: Document = {
@@ -225,6 +225,12 @@ describe('reject', () => {
     ).toThrow(IllegalTransition);
   });
 
+  it('refuses to reject a document that is already rejected', () => {
+    expect(() =>
+      transition(doc({ status: 'completed', reviewStatus: 'rejected' }), { type: 'reject', at })
+    ).toThrow(IllegalTransition);
+  });
+
   it('refuses to reject a document still in flight', () => {
     expect(() => transition(doc({ status: 'processing' }), { type: 'reject', at })).toThrow(
       IllegalTransition
@@ -238,5 +244,58 @@ describe('purity', () => {
     const snapshot = structuredClone(input);
     transition(input, { type: 'fail', at, error: timeout });
     expect(input).toEqual(snapshot);
+  });
+});
+
+describe('can', () => {
+  const reviewable: Document = {
+    id: 'doc_1',
+    batchId: 'b',
+    fileName: 'f.pdf',
+    mimeType: 'application/pdf',
+    size: 1,
+    status: 'completed',
+    reviewStatus: 'needs_review',
+    attempts: 0,
+    uploadedAt: '2026-09-04T00:00:00.000Z',
+    extraction: {
+      documentType: { status: 'extracted', value: 'id_scan', confidence: 0.9 },
+      personName: { status: 'uncertain', value: 'A', confidence: 0.5 },
+      phone: { status: 'missing' },
+      location: { status: 'extracted', value: 'K', confidence: 0.9 },
+      programName: { status: 'extracted', value: 'P', confidence: 0.9 },
+      date: { status: 'extracted', value: '2026-01-01', confidence: 0.9 },
+    },
+  };
+
+  it('permits exactly the review actions the transition table allows', () => {
+    expect(can(reviewable, 'confirm')).toBe(true);
+    expect(can(reviewable, 'reject')).toBe(true);
+    expect(can(reviewable, 'correct')).toBe(true);
+    expect(can(reviewable, 'retry')).toBe(false);
+  });
+
+  it('withdraws confirm and reject once a document is confirmed', () => {
+    const confirmed = { ...reviewable, reviewStatus: 'confirmed' as const };
+    expect(can(confirmed, 'confirm')).toBe(false);
+    expect(can(confirmed, 'reject')).toBe(false);
+  });
+
+  it('offers retry only for a retryable failure that was not rejected', () => {
+    const failed: Document = {
+      ...reviewable,
+      status: 'failed',
+      reviewStatus: 'not_required',
+      extraction: undefined,
+      error: { code: 'PROCESSING_TIMEOUT', message: 'timed out', retryable: true },
+    };
+    expect(can(failed, 'retry')).toBe(true);
+    expect(can({ ...failed, reviewStatus: 'rejected' }, 'retry')).toBe(false);
+    expect(
+      can(
+        { ...failed, error: { code: 'UNSUPPORTED_FORMAT', message: 'nope', retryable: false } },
+        'retry'
+      )
+    ).toBe(false);
   });
 });

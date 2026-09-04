@@ -5,7 +5,9 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useDocument, useDocumentMutations } from '../../api/mutations';
 import { PAGE_SIZE, useBatches, useDocuments } from '../../api/queries';
+import { DocumentDrawer } from '../document/DocumentDrawer';
 import { count } from '../../lib/format';
 import { DocumentsTable } from './DocumentsTable';
 import { FilterBar } from './FilterBar';
@@ -20,6 +22,8 @@ export function Dashboard() {
   const navigate = useNavigate({ from: '/' });
   const batches = useBatches();
   const documents = useDocuments(search, batches.data);
+  const opened = useDocument(search.doc);
+  const actions = useDocumentMutations(search.doc);
 
   const patch = useCallback(
     (next: Partial<DocumentSearch>) => {
@@ -111,6 +115,21 @@ export function Dashboard() {
         onRetry={() => void documents.refetch()}
         onClearFilters={clearFilters}
       />
+
+      {search.doc ? (
+        <DocumentDrawer
+          doc={opened.data}
+          isPending={opened.isPending}
+          error={opened.error}
+          pending={actions.pending}
+          returnFocusTo={search.doc}
+          onClose={() => patch({ doc: undefined })}
+          onConfirm={() => actions.confirm.mutate()}
+          onReject={() => actions.reject.mutate()}
+          onRetry={() => actions.retry.mutate()}
+          onCorrect={(field, value) => actions.correct.mutate({ field, value })}
+        />
+      ) : null}
 
       <nav className="flex items-center gap-4 py-3 pb-12 text-ink-muted" aria-label="Pagination">
         <span aria-live="polite">
