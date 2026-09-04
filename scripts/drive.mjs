@@ -76,7 +76,8 @@ ws.onmessage = (event) => {
   const pending = waiting.get(message.id);
   if (!pending) return;
   waiting.delete(message.id);
-  message.error ? pending.reject(new Error(message.error.message)) : pending.resolve(message.result);
+  if (message.error) pending.reject(new Error(message.error.message));
+  else pending.resolve(message.result);
 };
 
 await send('Page.enable');

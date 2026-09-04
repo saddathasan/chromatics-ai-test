@@ -6,19 +6,7 @@
  *
  * Light scheme throughout, because that is what the README renders against.
  */
-import {
-  clickText,
-  evaluate,
-  finish,
-  open,
-  scheme,
-  send,
-  shot,
-  sleep,
-  waitFor,
-} from './drive.mjs';
-
-const files = process.argv.includes('--files') ? [] : null;
+import { clickText, evaluate, finish, open, scheme, shot, sleep, waitFor } from './drive.mjs';
 
 await scheme('light');
 
