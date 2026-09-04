@@ -65,7 +65,7 @@ describe('InfoTip', () => {
     fireEvent.focus(trigger());
     expect(screen.getByRole('link', { name: /read more/i })).toHaveAttribute(
       'href',
-      '/guide#term-throughput'
+      '/guide#term-throughput',
     );
   });
 });
