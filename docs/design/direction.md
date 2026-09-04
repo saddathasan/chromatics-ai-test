@@ -322,7 +322,7 @@ Every row in the register carries a two-character mark in a fixed mono gutter at
 `ink` at `micro` size — the place and the manner in which a conservator annotates a register:
 
 ```
- ·  ALO-2024-EN-04817   enrollment_0417.jpg    ▸ In flight
+ ▸  ALO-2024-EN-04817   enrollment_0417.jpg    ▸ In flight
  !  ALO-2024-MI-04818   intake_scan_88.pdf     ! Needs review    3 fields
  ✕  ALO-2024-ID-04819   id_back_0092.jpg       ✕ Recapture       unsupported format
  ✓  ALO-2024-HW-04820   note_field_0031.jpg    ✓ Auto-accepted   0.94
@@ -363,7 +363,16 @@ centred hero, no three feature cards. Copy is checked in §9.
 
 ## 9. What I could not verify, and what needs your call
 
-**Needs a decision from you before M4:**
+**Decided by Saddat, 2026-09-04 — all four approved, and the prototype is built to them:**
+
+1. ✅ **Lane-first status column.** One lane column as glyph + word, raw pair in `micro` beneath.
+   **This supersedes spec §6.1's two badges** and is logged as an M3 deviation in `docs/TRACKER.md`.
+   The M4 checklist item "badges with text for every value" now means four lanes plus the raw pair.
+2. ✅ **IBM Plex install approved for M4** — `@fontsource/ibm-plex-sans`, `@fontsource/ibm-plex-mono`.
+3. ✅ **14px register body.**
+4. ✅ **Direction approved**; `docs/design/prototype.html` built and audited.
+
+Original wording of the open questions, kept for the record:
 
 1. **Lane-first status column** (§6). Spec §6.1 says "status badge, review badge" — two columns. I am
    proposing one `lane` column with the raw pair in `micro` beneath, because two pills per row across
@@ -398,6 +407,32 @@ centred hero, no three feature cards. Copy is checked in §9.
 
 ---
 
-**Approve, revise, or reject.** Nothing gets built until you say. On approval the next step is
-`docs/design/prototype.html`: the direction strip plus a fully built dashboard and drawer with real
-Alo Relief Trust content — real filenames, real Bangladeshi phone formats, real failure reasons.
+## 10. Audit (Phase 7)
+
+Run against `anti-slop.md`'s 5-second audit and verified by rendering the page in Chrome, not by
+reading the markup. **0 of 12 marks.** No accent hue, no Inter, no achromatic greys, no hero, no
+feature cards, no uniform padding. Copy passes the name-swap test — the headline names a real batch
+and a real count, and every failure reason is specific to a physical defect. Greps for the `STRONG`
+buzzword list and for negative parallelism return nothing. The only `border-radius` in the file is
+the live indicator dot; the only `box-shadow` is a 2px inset edge marker on the open row. No
+gradients, no drop shadows, no rounded containers.
+
+Fixed during the audit, each caught by looking at the render:
+
+- The palette swatches followed the active theme while their printed hexes did not, so the panel
+  contradicted itself in dark mode. Now each swatch shows both chips and both hexes, fixed.
+- `<html data-theme="light">` was hardcoded, so the page ignored the system colour scheme entirely
+  and the `prefers-color-scheme` block could never fire. Removed; the button is now an override and
+  labels itself from the resolved scheme.
+- The margin mark used `·` for in-flight while the status column used `▸`. One glyph per state now.
+- Person and confidence cells fell back to an em-dash — the exact thing §3.1 argues against. The
+  cells are empty; the state column already says why there is no value.
+- Two rows were pre-selected, so the filter row was never visible at rest. Selection now starts empty.
+
+**Verified numerically**, not by eye: all 26 colour tokens in the prototype's CSS match
+`palette.mjs` output exactly, and `scrollWidth === clientWidth` at narrow widths — the register
+scrolls inside its own container and the page never scrolls sideways.
+
+**Still unverified after the audit:** the letterforms (the prototype renders in the fallback stack,
+resolved at M4 by the approved self-hosted install), APCA as a second opinion, and an actual
+colour-blindness simulator pass on the rendered screens.
