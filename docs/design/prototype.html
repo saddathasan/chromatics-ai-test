@@ -1,0 +1,625 @@
+<!doctype html>
+<!--
+  Design-direction prototype for the Alo Relief Trust archive console.
+  Proves docs/design/direction.md: the ruled register, colour reserved for state,
+  glyph-and-word statuses, the margin mark, and the raw-to-normalized field row.
+  Self-contained on purpose - no framework, no CDN, no build step. Open it directly.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alo Relief Trust — archive console · design direction</title>
+<style>
+/* ---------- tokens: computed in docs/design/palette.mjs, not eyeballed ---------- */
+:root{
+  --paper:#f9fbfe; --paper-sunk:#f0f4f7; --paper-hover:#eef2f6;
+  --rule:#d9dfe5; --rule-strong:#b7bfc7; --field:#87909a; --focus:#20709f;
+  --ink:#141f2b; --ink-muted:#606a74;
+  --queued:#606a74; --processing:#20709f; --completed:#1f6f3d;
+  --attention:#8e5d11; --failed:#ba2b2e;
+  --tint-attention:#fdf5e7; --tint-processing:#eaf2f8; --tint-selected:#e9eff5;
+}
+:root[data-theme="dark"]{
+  --paper:#101419; --paper-sunk:#181e23; --paper-hover:#1d242a;
+  --rule:#2d343b; --rule-strong:#464e57; --field:#606a74; --focus:#6bbaf0;
+  --ink:#e4e8ed; --ink-muted:#989fa7;
+  --queued:#989fa7; --processing:#6bbaf0; --completed:#7fcc94;
+  --attention:#f4b768; --failed:#f28881;
+  --tint-attention:#241d10; --tint-processing:#122029; --tint-selected:#1b232b;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#101419; --paper-sunk:#181e23; --paper-hover:#1d242a;
+    --rule:#2d343b; --rule-strong:#464e57; --field:#606a74; --focus:#6bbaf0;
+    --ink:#e4e8ed; --ink-muted:#989fa7;
+    --queued:#989fa7; --processing:#6bbaf0; --completed:#7fcc94;
+    --attention:#f4b768; --failed:#f28881;
+    --tint-attention:#241d10; --tint-processing:#122029; --tint-selected:#1b232b;
+  }
+}
+
+/* IBM Plex is self-hosted in the real build (@fontsource, WOFF2, Latin subset).
+   The prototype may not load webfonts, so the fallback stack is deliberate. */
+:root{
+  --sans:"IBM Plex Sans","Segoe UI",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font:400 14px/1.45 var(--sans);
+  font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1;
+  -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:2px solid var(--focus); outline-offset:2px}
+button{font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer}
+input,select{font:inherit; color:inherit}
+.mono{font-family:var(--mono); font-variant-numeric:tabular-nums}
+.micro{font-size:11px; line-height:1.4; color:var(--ink-muted)}
+.label{
+  font-size:12px; line-height:1.35; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--ink-muted); font-weight:500;
+}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.shell{max-width:1360px; margin:0 auto; padding:0 var(--s5)}
+
+/* ---------- direction strip ---------- */
+.strip{border-bottom:1px solid var(--rule-strong); background:var(--paper-sunk)}
+.strip-in{padding:var(--s5) 0 var(--s6)}
+.strip h1{font-size:18px; line-height:1.35; margin:0 0 var(--s1); font-weight:600}
+.strip .sub{color:var(--ink-muted); margin:0 0 var(--s5); max-width:66ch; font-size:15px}
+.panels{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:var(--s5)}
+.panels > *, .timeline > li > *, .field-val > *{min-width:0}
+.sig pre{max-width:100%}
+.panel > .label{display:block; margin-bottom:var(--s3)}
+.swatches{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:var(--s3)}
+.sw{display:flex; align-items:center; gap:var(--s2)}
+.sw i{width:14px; height:26px; flex:none; border:1px solid var(--rule-strong)}
+.sw i + i{margin-left:-1px}
+.sw b{font-weight:500; font-size:12px; display:block}
+.sw .micro{display:block; white-space:nowrap}
+.typescale > div{margin-bottom:var(--s2)}
+.typescale .t-display{font-size:clamp(24px,2.2vw,32px); line-height:1.2; font-weight:600}
+.typescale .t-heading{font-size:18px; line-height:1.35; font-weight:600}
+.vocab{margin:0; display:grid; grid-template-columns:auto 1fr; gap:var(--s1) var(--s3); font-size:12px}
+.vocab dt{font-family:var(--mono); color:var(--ink-muted)}
+.vocab dd{margin:0}
+.sig{border-left:2px solid var(--ink); padding-left:var(--s3)}
+.sig pre{
+  font-family:var(--mono); font-size:11px; line-height:1.7; margin:var(--s2) 0 0;
+  overflow-x:auto; color:var(--ink-muted);
+}
+
+/* ---------- app chrome ---------- */
+.appbar{
+  display:flex; align-items:baseline; gap:var(--s4); flex-wrap:wrap;
+  padding:var(--s5) 0 var(--s4); border-bottom:1px solid var(--rule);
+}
+.appbar h2{margin:0; font-size:18px; font-weight:600; line-height:1.35}
+.appbar .spacer{flex:1 1 auto}
+.btn{
+  border:1px solid var(--field); padding:7px var(--s3); min-height:32px;
+  background:var(--paper); line-height:1.2;
+}
+.btn:hover{background:var(--paper-hover)}
+.btn-primary{background:var(--ink); color:var(--paper); border-color:var(--ink); font-weight:500}
+.btn-primary:hover{opacity:.88; background:var(--ink)}
+
+/* ---------- headline row ---------- */
+.headline{
+  display:flex; align-items:flex-end; gap:var(--s5); flex-wrap:wrap;
+  padding:var(--s5) 0; border-bottom:1px solid var(--rule);
+}
+.headline .count{font-size:clamp(24px,2.2vw,32px); line-height:1.2; font-weight:600}
+.headline .of{color:var(--ink-muted); font-weight:400}
+.headline .right{margin-left:auto; display:flex; gap:var(--s5); align-items:flex-end; flex-wrap:wrap}
+.metric b{display:block; font-weight:600; font-size:14px}
+.live{display:inline-flex; align-items:center; gap:6px; color:var(--processing)}
+.live .dot{width:7px; height:7px; background:currentColor; border-radius:50%}
+@media (prefers-reduced-motion: no-preference){
+  .live .dot{animation:pulse 1.5s ease-in-out infinite}
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.spark{display:block}
+
+/* ---------- filter / selection row ---------- */
+.lanes{display:flex; gap:0; flex-wrap:wrap; border-bottom:1px solid var(--rule)}
+.lane{
+  padding:var(--s3) var(--s4) 10px; border-bottom:2px solid transparent;
+  display:flex; align-items:baseline; gap:var(--s2); white-space:nowrap;
+}
+.lane:first-child{padding-left:0}
+.lane:hover{background:var(--paper-hover)}
+.lane[aria-pressed="true"]{border-bottom-color:var(--ink); font-weight:600}
+.lane .n{font-variant-numeric:tabular-nums}
+.lane .g{font-family:var(--mono)}
+
+.controls{
+  display:flex; gap:var(--s2); align-items:center; flex-wrap:wrap;
+  padding:var(--s3) 0; border-bottom:1px solid var(--rule); min-height:56px;
+}
+.controls input[type=search], .controls select{
+  border:1px solid var(--field); background:var(--paper); padding:6px var(--s2); min-height:32px;
+}
+.controls input[type=search]{min-width:min(280px,100%)}
+.link{text-decoration:underline; text-underline-offset:3px; color:var(--ink-muted)}
+.link:hover{color:var(--ink)}
+.selbar{display:none; align-items:center; gap:var(--s4); flex-wrap:wrap}
+body[data-selection="on"] .selbar{display:flex}
+body[data-selection="on"] .filters{display:none}
+.filters{display:flex; gap:var(--s2); align-items:center; flex-wrap:wrap}
+
+/* ---------- the register ---------- */
+.register-scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; min-width:940px}
+thead th{
+  position:sticky; top:0; z-index:2; background:var(--paper-sunk);
+  text-align:left; font-size:12px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--ink-muted); font-weight:500; padding:var(--s2) var(--s3);
+  border-bottom:1px solid var(--rule-strong); white-space:nowrap;
+}
+tbody td{padding:var(--s2) var(--s3); border-bottom:1px solid var(--rule); vertical-align:top}
+tbody tr{height:44px}
+tbody tr:hover{background:var(--paper-hover)}
+tbody tr[aria-selected="true"]{background:var(--tint-selected)}
+tbody tr.open{background:var(--tint-selected); box-shadow:inset 2px 0 0 var(--ink)}
+.c-mark{width:2.5ch; padding-left:0 !important; padding-right:0 !important;
+  font-family:var(--mono); font-size:11px; color:var(--ink); text-align:center}
+.c-check{width:32px}
+.c-num{text-align:right; font-variant-numeric:tabular-nums}
+.file{background:none; text-align:left; text-decoration:underline; text-underline-offset:2px}
+.file:hover{color:var(--processing)}
+.state{display:flex; align-items:baseline; gap:6px; white-space:nowrap}
+.state .g{font-family:var(--mono); font-weight:600}
+.s-inflight{color:var(--processing)} .s-review{color:var(--attention)}
+.s-recap{color:var(--failed)} .s-accepted{color:var(--completed)}
+.s-queued{color:var(--queued)}
+.pager{display:flex; align-items:center; gap:var(--s4); padding:var(--s3) 0 var(--s7); color:var(--ink-muted)}
+.pager .spacer{flex:1}
+
+/* ---------- drawer ---------- */
+.scrim{position:fixed; inset:0; background:rgba(20,31,43,.42); border:0; padding:0; cursor:default}
+.drawer{
+  position:fixed; top:0; right:0; bottom:0; width:min(520px,100%);
+  background:var(--paper); border-left:1px solid var(--rule-strong);
+  display:flex; flex-direction:column; z-index:10;
+}
+@media (prefers-reduced-motion: no-preference){
+  .drawer{animation:slide 200ms cubic-bezier(.2,0,0,1)}
+  @keyframes slide{from{transform:translateX(24px); opacity:.4} to{transform:none; opacity:1}}
+}
+.drawer[hidden], .scrim[hidden]{display:none}
+.drawer-banner{
+  padding:var(--s3) var(--s5); background:var(--tint-attention);
+  border-bottom:1px solid var(--rule-strong); display:flex; align-items:baseline; gap:var(--s2);
+}
+.drawer-head{padding:var(--s4) var(--s5); border-bottom:1px solid var(--rule)}
+.drawer-head h3{margin:0 0 var(--s1); font-size:18px; line-height:1.35; font-weight:600}
+.drawer-body{flex:1 1 auto; overflow-y:auto; padding:0 var(--s5) var(--s5)}
+.group{padding:var(--s4) 0 var(--s2); border-bottom:1px solid var(--rule)}
+.group:first-child{padding-top:var(--s4)}
+.field{padding:var(--s3) 0; border-bottom:1px solid var(--rule)}
+.field:last-child{border-bottom:0}
+.field-top{display:flex; align-items:baseline; gap:var(--s3)}
+.field-top .label{flex:1}
+.field-val{display:flex; align-items:baseline; gap:var(--s2); flex-wrap:wrap; margin-top:3px}
+.field-val .v{font-weight:500}
+.field-val .arrow{font-family:var(--mono); color:var(--ink-muted)}
+.field-val .why{color:var(--attention)}
+.raw{margin-top:3px}
+.raw code{font-family:var(--mono); font-size:11px; color:var(--ink-muted)}
+.correct{text-decoration:underline; text-underline-offset:3px; color:var(--processing); font-size:12px}
+.timeline{list-style:none; margin:var(--s3) 0 0; padding:0}
+.timeline li{display:grid; grid-template-columns:2ch 1fr auto; gap:var(--s2); padding:5px 0}
+.timeline .g{font-family:var(--mono); font-size:11px}
+.drawer-actions{
+  display:flex; gap:var(--s2); padding:var(--s3) var(--s5);
+  border-top:1px solid var(--rule-strong); background:var(--paper-sunk); flex-wrap:wrap;
+}
+.drawer-actions .spacer{flex:1}
+
+@media (max-width:640px){
+  .shell{padding:0 var(--s4)}
+  .headline .right{margin-left:0; width:100%}
+  .drawer{width:100%; border-left:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= DIRECTION STRIP ================= -->
+<section class="strip">
+ <div class="shell strip-in">
+  <h1>Direction — Alo Relief Trust archive console</h1>
+  <p class="sub">Colour means state and nothing else: there is no brand accent hue, actions are ink
+  on paper, and the only saturated colour on the screen below is a status. Every status is drawn as
+  a mark <em>and</em> a word, because the five status colours are within 20% relative luminance of
+  each other on purpose.</p>
+
+  <div class="panels">
+   <div class="panel">
+    <span class="label">Palette · light / dark, verified</span>
+    <div class="swatches">
+      <span class="sw"><i style="background:#141f2b"></i><i style="background:#e4e8ed"></i><span><b>ink</b><span class="micro mono">#141f2b · 16.07</span><span class="micro mono">#e4e8ed · 15.02</span></span></span>
+      <span class="sw"><i style="background:#606a74"></i><i style="background:#989fa7"></i><span><b>ink-muted</b><span class="micro mono">#606a74 · 5.32</span><span class="micro mono">#989fa7 · 6.91</span></span></span>
+      <span class="sw"><i style="background:#20709f"></i><i style="background:#6bbaf0"></i><span><b>processing</b><span class="micro mono">#20709f · 5.22</span><span class="micro mono">#6bbaf0 · 8.72</span></span></span>
+      <span class="sw"><i style="background:#1f6f3d"></i><i style="background:#7fcc94"></i><span><b>completed</b><span class="micro mono">#1f6f3d · 5.96</span><span class="micro mono">#7fcc94 · 9.65</span></span></span>
+      <span class="sw"><i style="background:#8e5d11"></i><i style="background:#f4b768"></i><span><b>attention</b><span class="micro mono">#8e5d11 · 5.44</span><span class="micro mono">#f4b768 · 10.40</span></span></span>
+      <span class="sw"><i style="background:#ba2b2e"></i><i style="background:#f28881"></i><span><b>failed</b><span class="micro mono">#ba2b2e · 5.83</span><span class="micro mono">#f28881 · 7.58</span></span></span>
+      <span class="sw"><i style="background:#87909a"></i><i style="background:#606a74"></i><span><b>field</b><span class="micro mono">#87909a · 3.12</span><span class="micro mono">#606a74 · 3.35</span></span></span>
+      <span class="sw"><i style="background:#d9dfe5"></i><i style="background:#2d343b"></i><span><b>rule</b><span class="micro mono">#d9dfe5 · —</span><span class="micro mono">#2d343b · —</span></span></span>
+    </div>
+    <p class="micro" style="margin:12px 0 0">Chips and ratios are light then dark, against <span class="mono">paper</span> in
+    each scheme, computed by <span class="mono">docs/design/palette.mjs</span>. All text pairs clear 4.5:1 and all in-scope non-text pairs clear 3:1 in <em>both</em>
+    schemes. Row hairlines are decorative separators and exempt from SC 1.4.11.</p>
+   </div>
+
+   <div class="panel">
+    <span class="label">Type · IBM Plex Sans + Plex Mono</span>
+    <div class="typescale">
+      <div class="t-display">81,204 <span class="of" style="color:var(--ink-muted)">display</span></div>
+      <div class="t-heading">Heading · 18px</div>
+      <div>Body · 14px, tabular figures — 04817 · 04B17</div>
+      <div class="label">Label · 12px uppercase</div>
+      <div class="micro mono">ALO-2024-MI-04818 · micro / mono identifier</div>
+    </div>
+    <p class="micro" style="margin:12px 0 0">Tabular figures throughout, so counts do not jitter
+    while a batch drains. Identifiers are mono — the shelfmark convention, and the only way
+    <span class="mono">04817</span> and <span class="mono">04B17</span> separate at a glance.</p>
+   </div>
+
+   <div class="panel">
+    <span class="label">Field-status vocabulary</span>
+    <dl class="vocab">
+      <dt>extracted</dt><dd>read cleanly</dd>
+      <dt>uncertain</dt><dd>read, but the reason for doubt is named</dd>
+      <dt>missing</dt><dd>not present on this form</dd>
+      <dt>unreadable</dt><dd>present, but we failed to read it</dd>
+      <dt>not_applicable</dt><dd>this form type has no such field</dd>
+      <dt>corrected</dt><dd>a person overrode the extraction</dd>
+    </dl>
+    <p class="micro" style="margin:12px 0 0">Six facts, never one em-dash. Archival condition
+    surveys treat “good / fair / poor” grades as useless and record the specific defect instead — a
+    bare <span class="mono">71%</span> is the OCR equivalent of “fair”.</p>
+   </div>
+
+   <div class="panel">
+    <span class="label">Signature · the margin mark</span>
+    <div class="sig">
+      <p style="margin:0">A two-character mark in a mono gutter at each row's left edge, where a
+      conservator annotates a register. Deliberately redundant with the status column — you find
+      every flagged item by running a finger down the edge, and it survives greyscale,
+      deuteranopia and a narrow column.</p>
+      <pre> ▸   ALO-2024-EN-04817   ▸ In flight
+ !   ALO-2024-MI-04818   ! Needs review
+ ✕   ALO-2024-ID-04819   ✕ Recapture
+ ✓   ALO-2024-HW-04820   ✓ Auto-accepted</pre>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ================= THE REAL PAGE ================= -->
+<main class="shell">
+
+ <div class="appbar">
+  <h2>Archive digitisation</h2>
+  <span class="micro">Alo Relief Trust · 4 batches</span>
+  <span class="spacer"></span>
+  <button class="btn" id="theme">Dark scheme</button>
+  <button class="btn btn-primary">Upload documents</button>
+ </div>
+
+ <!-- headline: how much is left, and is it still moving -->
+ <div class="headline">
+  <div>
+    <div class="count">81,204 <span class="of">of 100,000 processed</span></div>
+    <div class="micro">Batch “Kurigram field drives 2024” started 09:12 · 4 h 21 m elapsed</div>
+  </div>
+  <div class="right">
+    <div class="metric">
+      <span class="label">Throughput</span>
+      <b>34 docs/s</b>
+    </div>
+    <div class="metric">
+      <span class="label">Remaining</span>
+      <b>about 6 min 39 s</b>
+    </div>
+    <div class="metric">
+      <span class="label">Last 30 min</span>
+      <svg class="spark" width="132" height="26" viewBox="0 0 132 26" role="img"
+           aria-label="Completed per minute over the last 30 minutes, holding steady near 34 per second">
+        <polyline fill="none" stroke="var(--rule-strong)" stroke-width="1.5"
+          points="0,20 11,18 22,19 33,14 44,15 55,11 66,12 77,9 88,13 99,8 110,9 121,7 132,8"/>
+      </svg>
+    </div>
+    <div class="metric">
+      <span class="label">Feed</span>
+      <b class="live"><span class="dot"></span> Live · updated 2 s ago</b>
+    </div>
+  </div>
+ </div>
+
+ <!-- every count is a filter; a number you cannot act on gets deleted -->
+ <div class="lanes" role="group" aria-label="Filter by lane">
+  <button class="lane" aria-pressed="false"><span>All</span><span class="n">100,000</span></button>
+  <button class="lane s-inflight" aria-pressed="false"><span class="g">▸</span><span>In flight</span><span class="n">13,571</span></button>
+  <button class="lane s-review" aria-pressed="true"><span class="g">!</span><span>Needs review</span><span class="n">4,821</span></button>
+  <button class="lane s-recap" aria-pressed="false"><span class="g">✕</span><span>Recapture</span><span class="n">404</span></button>
+  <button class="lane s-accepted" aria-pressed="false"><span class="g">✓</span><span>Auto-accepted</span><span class="n">81,204</span></button>
+ </div>
+
+ <!-- selection replaces the filters in place: no overlay, no layout shift -->
+ <div class="controls">
+  <div class="filters">
+    <label class="sr" for="q">Search file name or identifier</label>
+    <input id="q" type="search" placeholder="File name or identifier…">
+    <label class="sr" for="type">Document type</label>
+    <select id="type"><option>All types</option><option>Enrollment</option>
+      <option selected>Medical intake</option><option>ID scan</option><option>Handwritten note</option></select>
+    <label class="sr" for="batch">Batch</label>
+    <select id="batch"><option selected>All batches</option><option>Kurigram field drives 2024</option>
+      <option>Satkhira cyclone response</option><option>Cox's Bazar intake Q3</option></select>
+    <button class="link" type="button">Clear</button>
+  </div>
+  <div class="selbar">
+    <strong id="selcount">2 selected</strong>
+    <button class="btn">Retry 2</button>
+    <button class="btn">Retry all 4,821 matching this filter</button>
+    <button class="link" type="button" id="clearsel">Clear selection</button>
+  </div>
+ </div>
+
+ <div class="register-scroll">
+ <table>
+  <caption class="sr">Documents in the archive, filtered to those needing review</caption>
+  <thead>
+    <tr>
+      <th scope="col" class="c-mark"><span class="sr">Margin mark</span></th>
+      <th scope="col" class="c-check"><input type="checkbox" id="all" aria-label="Select all rows on this page"></th>
+      <th scope="col">Identifier</th>
+      <th scope="col">File</th>
+      <th scope="col">Type</th>
+      <th scope="col">State</th>
+      <th scope="col">Person</th>
+      <th scope="col" class="c-num">Conf.</th>
+      <th scope="col" class="c-num">Updated</th>
+    </tr>
+  </thead>
+  <tbody id="rows">
+    <!-- rows are written by script so the demo data stays in one readable place -->
+  </tbody>
+ </table>
+ </div>
+
+ <div class="pager">
+  <span>Rows 1–16 of 4,821</span>
+  <span class="spacer"></span>
+  <button class="btn" disabled style="opacity:.5">Previous</button>
+  <button class="btn">Next</button>
+ </div>
+</main>
+
+<!-- ================= DETAIL DRAWER ================= -->
+<button class="scrim" id="scrim" hidden aria-label="Close detail panel"></button>
+<aside class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dtitle">
+ <div class="drawer-banner">
+   <span class="mono s-review" aria-hidden="true">!</span>
+   <strong class="s-review">Needs review</strong>
+   <span class="micro">failed · processing timeout · retryable · attempt 2 of 3</span>
+ </div>
+
+ <div class="drawer-head">
+   <h3 id="dtitle">intake_scan_88.pdf</h3>
+   <div class="micro mono">ALO-2024-MI-04818 · Kurigram field drives 2024 · 1.8 MB · medical intake</div>
+ </div>
+
+ <div class="drawer-body">
+   <div class="group">
+     <span class="label">Needs review (3)</span>
+   </div>
+
+   <div class="field">
+     <div class="field-top">
+       <span class="label">Person name</span>
+       <span class="micro">uncertain · 66%</span>
+     </div>
+     <div class="field-val">
+       <span class="v">Rahima Khatun</span>
+       <span class="arrow" aria-hidden="true">←</span>
+       <span class="why">ink bleed across the surname</span>
+     </div>
+     <div class="raw">raw <code>“Rahima Kha—n”</code></div>
+     <button class="correct" type="button">Correct</button>
+   </div>
+
+   <div class="field">
+     <div class="field-top">
+       <span class="label">Phone</span>
+       <span class="micro">uncertain · 71%</span>
+     </div>
+     <div class="field-val">
+       <span class="v mono">+880 17•• ••• 402</span>
+       <span class="arrow" aria-hidden="true">←</span>
+       <span class="why">handwritten, low contrast</span>
+     </div>
+     <div class="raw">raw <code>“০১৭ ৩২ ৪৪ ৪০২”</code> · Bengali numerals, transliterated</div>
+     <button class="correct" type="button">Correct</button>
+   </div>
+
+   <div class="field">
+     <div class="field-top">
+       <span class="label">Date of visit</span>
+       <span class="micro">unreadable</span>
+     </div>
+     <div class="field-val">
+       <span class="v" style="color:var(--ink-muted)">no value recorded</span>
+       <span class="arrow" aria-hidden="true">←</span>
+       <span class="why">top-right corner torn; the date box is not on the scan</span>
+     </div>
+     <button class="correct" type="button">Enter manually</button>
+   </div>
+
+   <div class="group"><span class="label">Recorded (3)</span></div>
+
+   <div class="field">
+     <div class="field-top"><span class="label">Document type</span><span class="micro">extracted · 98%</span></div>
+     <div class="field-val"><span class="v">Medical intake</span></div>
+   </div>
+   <div class="field">
+     <div class="field-top"><span class="label">Location</span><span class="micro">extracted · 93%</span></div>
+     <div class="field-val"><span class="v">Kurigram Sadar</span></div>
+     <div class="raw">raw <code>“Kurigram sador upz.”</code></div>
+   </div>
+   <div class="field">
+     <div class="field-top"><span class="label">Programme</span><span class="micro">corrected · by Nusrat, 13:41</span></div>
+     <div class="field-val"><span class="v">Safe Motherhood</span></div>
+     <div class="raw">raw <code>“Safe Mother hood”</code></div>
+   </div>
+
+   <div class="group"><span class="label">Processing</span></div>
+   <ol class="timeline">
+     <li><span class="g s-accepted">✓</span><span>Queued</span><span class="micro mono">14:02:11</span></li>
+     <li><span class="g s-accepted">✓</span><span>Processing started</span><span class="micro mono">14:02:14</span></li>
+     <li><span class="g s-recap">✕</span><span>OCR pass failed — worker exceeded 30 s</span><span class="micro mono">14:02:44</span></li>
+     <li><span class="g s-accepted">✓</span><span>Retried automatically (attempt 2)</span><span class="micro mono">14:02:46</span></li>
+     <li><span class="g s-accepted">✓</span><span>Extraction completed in 8.2 s</span><span class="micro mono">14:02:54</span></li>
+   </ol>
+
+   <div class="group" style="border-bottom:0"><span class="label">Why this can be retried</span></div>
+   <p class="micro" style="margin:0">A timeout is a fault in our pipeline, not in the paper. The
+   scan is intact and a third attempt may succeed. Files that fail because the format is
+   unsupported or the page is blank cannot be retried — those need a fresh capture.</p>
+ </div>
+
+ <div class="drawer-actions">
+   <button class="btn btn-primary">Confirm</button>
+   <button class="btn">Correct</button>
+   <button class="btn">Retry</button>
+   <span class="spacer"></span>
+   <button class="btn">Reject</button>
+   <button class="btn" id="close">Close</button>
+ </div>
+</aside>
+
+<script>
+/* Demo data. Real filenames, real formats, real failure reasons — placeholder
+   content produces placeholder layout, so none of this is lorem. */
+const DOCS = [
+ {m:'!',id:'ALO-2024-MI-04818',f:'intake_scan_88.pdf',t:'Medical intake',lane:'review',
+  state:'Needs review',sub:'failed · timeout · retryable',p:'Rahima Khatun',c:'0.66',u:'2 s ago',open:true},
+ {m:'!',id:'ALO-2024-MI-04822',f:'intake_scan_92.pdf',t:'Medical intake',lane:'review',
+  state:'Needs review',sub:'completed · 2 fields uncertain',p:'Shaheen Akter',c:'0.71',u:'6 s ago'},
+ {m:'▸',id:'ALO-2024-EN-04817',f:'enrollment_0417.jpg',t:'Enrollment',lane:'inflight',
+  state:'In flight',sub:'processing · started 3 s ago',p:'',c:'',u:'3 s ago'},
+ {m:'!',id:'ALO-2024-HW-04831',f:'note_field_0031.jpg',t:'Handwritten note',lane:'review',
+  state:'Needs review',sub:'completed · phone unreadable',p:'Md. Jashim Uddin',c:'0.58',u:'11 s ago'},
+ {m:'✕',id:'ALO-2024-ID-04819',f:'id_back_0092.heic',t:'ID scan',lane:'recap',
+  state:'Recapture',sub:'failed · .heic unsupported · not retryable',p:'',c:'',u:'14 s ago'},
+ {m:'!',id:'ALO-2024-MI-04840',f:'intake_kurigram_14.pdf',t:'Medical intake',lane:'review',
+  state:'Needs review',sub:'completed · date missing',p:'Parvin Begum',c:'0.74',u:'19 s ago'},
+ {m:'✓',id:'ALO-2024-HW-04820',f:'note_field_0032.jpg',t:'Handwritten note',lane:'accepted',
+  state:'Auto-accepted',sub:'completed',p:'Abdul Karim',c:'0.94',u:'22 s ago'},
+ {m:'!',id:'ALO-2024-EN-04844',f:'enrollment_0444.jpg',t:'Enrollment',lane:'review',
+  state:'Needs review',sub:'completed · programme uncertain',p:'Ruma Khatun',c:'0.69',u:'28 s ago'},
+ {m:'▸',id:'ALO-2024-MI-04851',f:'intake_scan_101.pdf',t:'Medical intake',lane:'inflight',
+  state:'In flight',sub:'queued · position 412',p:'',c:'',u:'31 s ago'},
+ {m:'✕',id:'ALO-2024-ID-04846',f:'id_front_0088.jpg',t:'ID scan',lane:'recap',
+  state:'Recapture',sub:'rejected by Nusrat · wrong person',p:'',c:'',u:'35 s ago'},
+ {m:'!',id:'ALO-2024-MI-04855',f:'intake_satkhira_07.pdf',t:'Medical intake',lane:'review',
+  state:'Needs review',sub:'failed · OCR service unavailable · retryable',p:'',c:'',u:'41 s ago'},
+ {m:'✓',id:'ALO-2024-EN-04858',f:'enrollment_0458.jpg',t:'Enrollment',lane:'accepted',
+  state:'Auto-accepted',sub:'completed',p:'Sultana Razia',c:'0.96',u:'44 s ago'},
+ {m:'!',id:'ALO-2024-HW-04861',f:'note_field_0039.jpg',t:'Handwritten note',lane:'review',
+  state:'Needs review',sub:'completed · name unreadable',p:'',c:'0.42',u:'52 s ago'},
+ {m:'✕',id:'ALO-2024-HW-04863',f:'note_field_0041.jpg',t:'Handwritten note',lane:'recap',
+  state:'Recapture',sub:'failed · page blank or obscured · not retryable',p:'',c:'',u:'58 s ago'},
+ {m:'!',id:'ALO-2024-MI-04869',f:'intake_bhola_22.pdf',t:'Medical intake',lane:'review',
+  state:'Needs review',sub:'completed · location uncertain',p:'Nasima Begum',c:'0.77',u:'1 min ago'},
+ {m:'✓',id:'ALO-2024-MI-04872',f:'intake_scan_118.pdf',t:'Medical intake',lane:'accepted',
+  state:'Auto-accepted',sub:'completed',p:'Fatema Yasmin',c:'0.91',u:'1 min ago'},
+];
+const GLYPH={inflight:'▸',review:'!',recap:'✕',accepted:'✓'};
+const CLS={inflight:'s-inflight',review:'s-review',recap:'s-recap',accepted:'s-accepted'};
+const esc=(s)=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+document.getElementById('rows').innerHTML = DOCS.map((d,i)=>`
+ <tr data-i="${i}"${d.open?' class="open"':''}>
+  <td class="c-mark" aria-hidden="true">${d.m}</td>
+  <td class="c-check"><input type="checkbox" class="rowsel" aria-label="Select ${esc(d.id)}"></td>
+  <td class="mono micro" style="padding-top:11px">${esc(d.id)}</td>
+  <td><button class="file" type="button">${esc(d.f)}</button></td>
+  <td>${esc(d.t)}</td>
+  <td>
+    <span class="state ${CLS[d.lane]}"><span class="g" aria-hidden="true">${GLYPH[d.lane]}</span>${esc(d.state)}</span>
+    <span class="micro" style="display:block">${esc(d.sub)}</span>
+  </td>
+  <td>${esc(d.p)}</td>
+  <td class="c-num mono">${esc(d.c)}</td>
+  <td class="c-num micro">${esc(d.u)}</td>
+ </tr>`).join('');
+
+/* Drawer: opens from the row, returns focus to the row it came from. */
+const drawer=document.getElementById('drawer'), scrim=document.getElementById('scrim');
+let opener=null;
+function openDrawer(from){
+  opener=from; drawer.hidden=false; scrim.hidden=false;
+  document.querySelectorAll('#rows tr').forEach(r=>r.classList.remove('open'));
+  from.closest('tr').classList.add('open');
+  drawer.querySelector('.btn').focus();
+}
+function closeDrawer(){
+  drawer.hidden=true; scrim.hidden=true;
+  if(opener) opener.focus();
+}
+document.getElementById('rows').addEventListener('click',e=>{
+  const b=e.target.closest('.file'); if(b) openDrawer(b);
+});
+document.getElementById('close').onclick=closeDrawer;
+scrim.onclick=closeDrawer;
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!drawer.hidden) closeDrawer(); });
+
+/* Selection swaps the filter row in place — nothing floats, nothing shifts. */
+const body=document.body, selcount=document.getElementById('selcount');
+function syncSelection(){
+  const boxes=[...document.querySelectorAll('.rowsel')];
+  const n=boxes.filter(b=>b.checked).length;
+  body.dataset.selection = n ? 'on' : 'off';
+  selcount.textContent = n+' selected';
+  boxes.forEach(b=>b.closest('tr').setAttribute('aria-selected', b.checked));
+  document.getElementById('all').checked = n===boxes.length && n>0;
+}
+document.getElementById('rows').addEventListener('change',e=>{
+  if(e.target.classList.contains('rowsel')) syncSelection();
+});
+document.getElementById('all').onchange=e=>{
+  document.querySelectorAll('.rowsel').forEach(b=>b.checked=e.target.checked); syncSelection();
+};
+document.getElementById('clearsel').onclick=()=>{
+  document.querySelectorAll('.rowsel').forEach(b=>b.checked=false); syncSelection();
+};
+syncSelection();
+
+/* Lane counts are filters, so they behave like a pressed-state group. */
+document.querySelectorAll('.lane').forEach(l=>l.onclick=()=>{
+  document.querySelectorAll('.lane').forEach(o=>o.setAttribute('aria-pressed','false'));
+  l.setAttribute('aria-pressed','true');
+});
+
+const themeBtn=document.getElementById('theme');
+const resolved=()=>document.documentElement.dataset.theme
+  || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+const syncTheme=()=>{ themeBtn.textContent = resolved()==='dark'?'Light scheme':'Dark scheme'; };
+themeBtn.onclick=()=>{
+  document.documentElement.dataset.theme = resolved()==='dark'?'light':'dark';
+  syncTheme();
+};
+syncTheme();
+</script>
+</body>
+</html>
