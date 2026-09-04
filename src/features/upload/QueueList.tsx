@@ -31,13 +31,22 @@ const STATE_COLOUR: Record<QueueState, string> = {
 
 export function QueueList({ items }: { items: QueueItem[] }) {
   const [filter, setFilter] = useState('');
+  const [failedOnly, setFailedOnly] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
 
-  // Names never change, so this survives the progress re-renders that mutate item state.
+  const failed = items.reduce((n, item) => n + (item.state === 'failed' ? 1 : 0), 0);
+
+  // Seven failures scattered through six hundred rows are unfindable by scrolling, and the
+  // name filter cannot help - the operator does not know which names failed.
   const shown = useMemo(() => {
     const needle = filter.trim().toLowerCase();
-    return needle ? items.filter((item) => item.name.toLowerCase().includes(needle)) : items;
-  }, [items, filter]);
+    if (!needle && !failedOnly) return items;
+    return items.filter(
+      (item) =>
+        (!failedOnly || item.state === 'failed') &&
+        (!needle || item.name.toLowerCase().includes(needle)),
+    );
+  }, [items, filter, failedOnly]);
 
   const first = Math.max(0, Math.floor(scrollTop / ROW) - OVERSCAN);
   const last = Math.min(shown.length, first + Math.ceil(VIEWPORT / ROW) + OVERSCAN * 2);
@@ -52,6 +61,19 @@ export function QueueList({ items }: { items: QueueItem[] }) {
           {shown.length === items.length ? ' files' : ` of ${count(items.length)} files`}
         </span>
         <span className="flex-1" />
+        {failed > 0 ? (
+          <label className="flex items-center gap-1.5 text-[12px]">
+            <input
+              type="checkbox"
+              checked={failedOnly}
+              onChange={(event) => {
+                setFailedOnly(event.target.checked);
+                setScrollTop(0);
+              }}
+            />
+            Failed only ({count(failed)})
+          </label>
+        ) : null}
         <input
           type="search"
           aria-label="Filter the queue by file name"

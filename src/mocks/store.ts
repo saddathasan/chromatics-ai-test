@@ -344,17 +344,24 @@ export function createBatch(name: string): Batch {
 export type UploadedFile = { clientKey: string; name: string; size: number; mimeType: string };
 
 /**
+ * Which uploaded file already became which document. The client's key is an upload-side
+ * identity - a path, a size and a file's modification time - and it stays on this side of the
+ * boundary: a document id is the server's to mint, and is read by people.
+ */
+const uploadedKeys = new Map<string, string>();
+
+/**
  * Adds uploaded files to a batch. Idempotent on `clientKey`, so a replayed upload request
  * never produces a second copy of the same file.
  */
 export function addDocuments(batchId: string, files: UploadedFile[]): number {
-  const seen = new Set(extraBase.map((b) => b.id));
   const t = now();
   let added = 0;
   for (const file of files) {
-    const id = `doc_up_${batchId}_${file.clientKey}`;
-    if (seen.has(id)) continue;
+    if (uploadedKeys.has(file.clientKey)) continue;
+    const id = `doc_up_${extraBase.length}`;
     const b = generateBase(TOTAL_DOCUMENTS + extraBase.length, batchId);
+    uploadedKeys.set(file.clientKey, id);
     extraBase.push({
       ...b,
       id,
@@ -366,7 +373,6 @@ export function addDocuments(batchId: string, files: UploadedFile[]): number {
       failureIndex: Math.random() < sim.failureRate ? Math.floor(Math.random() * 5) : null,
       uploadedAt: new Date().toISOString(),
     });
-    seen.add(id);
     added++;
   }
   persist();
@@ -388,6 +394,7 @@ export function setSim(next: Partial<SimState>): SimState {
 export function reset(): void {
   patches = new Map();
   extraBase = [];
+  uploadedKeys.clear();
   sim = { ...DEFAULT_SIM };
   virtualSeconds = 0;
   lastRealMs = Date.now();

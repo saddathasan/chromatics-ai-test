@@ -77,10 +77,12 @@ export function UploadDialog({
       </div>
 
       <div className="px-6 py-4">
-        <p className="m-0 mb-4 border-l-2 border-attention bg-tint-attention px-3 py-2 text-[15px]">
-          Keep this tab open — uploading stops if you close it. Anything already uploaded keeps
-          processing.
-        </p>
+        {upload.phase === 'idle' || upload.phase === 'uploading' ? (
+          <p className="m-0 mb-4 border-l-2 border-attention bg-tint-attention px-3 py-2 text-[15px]">
+            Keep this tab open — uploading stops if you close it. Anything already uploaded keeps
+            processing.
+          </p>
+        ) : null}
 
         {idle ? (
           <>

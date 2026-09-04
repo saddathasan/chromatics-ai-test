@@ -31,6 +31,21 @@ describe('QueueList', () => {
     expect(screen.getAllByRole('row')[0]).toHaveAttribute('aria-rowindex', '97');
   });
 
+  it('narrows to the failures, which are otherwise unfindable by scrolling', () => {
+    const queue = items(600);
+    queue[417].state = 'failed';
+    queue[417].attempts = 1;
+    render(<QueueList items={queue} />);
+    fireEvent.click(screen.getByRole('checkbox', { name: /failed only \(1\)/i }));
+    expect(screen.getAllByRole('row')).toHaveLength(1);
+    expect(screen.getByText('failed after retry')).toBeInTheDocument();
+  });
+
+  it('offers no failed-only toggle while nothing has failed', () => {
+    render(<QueueList items={items(10)} />);
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  });
+
   it('filters by name, because a queue you cannot search is a wall', () => {
     render(<QueueList items={items(1000)} />);
     fireEvent.change(screen.getByRole('searchbox', { name: /filter the queue/i }), {
