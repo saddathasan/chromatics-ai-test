@@ -46,7 +46,10 @@ export function useDocumentMutations(id: string | undefined) {
       const previous = client.getQueryData<Document>(['document', id]);
       if (previous) {
         try {
-          client.setQueryData(['document', id], transition(previous, { type: 'retry', at: new Date().toISOString() }));
+          client.setQueryData(
+            ['document', id],
+            transition(previous, { type: 'retry', at: new Date().toISOString() }),
+          );
         } catch {
           // Illegal here means illegal on the server too; let the request return the 409.
         }

@@ -41,12 +41,7 @@ export const RETRYABLE: Record<ErrorCode, boolean> = {
  * "make missing/uncertain data visible" requirement — a bare dash hides all five cases.
  */
 export type FieldStatus =
-  | 'extracted'
-  | 'uncertain'
-  | 'missing'
-  | 'unreadable'
-  | 'not_applicable'
-  | 'corrected';
+  'extracted' | 'uncertain' | 'missing' | 'unreadable' | 'not_applicable' | 'corrected';
 
 /** One extracted value: normalized form, the raw OCR text behind it, and how sure we are. */
 export type ExtractedField<T = string> = {
@@ -60,11 +55,7 @@ export type ExtractedField<T = string> = {
 };
 
 export type DocumentType =
-  | 'enrollment'
-  | 'medical_intake'
-  | 'id_scan'
-  | 'handwritten_note'
-  | 'unknown';
+  'enrollment' | 'medical_intake' | 'id_scan' | 'handwritten_note' | 'unknown';
 
 /** The normalized record a processed document produces. Fields absent for a type are not_applicable. */
 export type NormalizedRecord = {

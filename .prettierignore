@@ -1,0 +1,10 @@
+# Generated or vendored: reformatting these produces enormous diffs and, in the worker's case,
+# edits a file MSW owns and rewrites on install.
+pnpm-lock.yaml
+public/mockServiceWorker.js
+dist/
+
+# Prose and design artefacts. Prettier rewraps markdown paragraphs and rewrites the hand-built
+# prototype, which turns a one-line edit into a thousand-line diff and loses the M3 formatting.
+*.md
+docs/design/

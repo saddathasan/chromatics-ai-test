@@ -32,10 +32,10 @@ async function guard<T>(op: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-export const loadOverlay = <T,>(): Promise<T | undefined> =>
+export const loadOverlay = <T>(): Promise<T | undefined> =>
   guard<T | undefined>(() => get<T>(KEY), undefined);
 
 // A failed write costs the reviewer their session history, never correctness.
-export const saveOverlay = <T,>(value: T): Promise<void> => guard(() => set(KEY, value), undefined);
+export const saveOverlay = <T>(value: T): Promise<void> => guard(() => set(KEY, value), undefined);
 
 export const clearOverlay = (): Promise<void> => guard(() => del(KEY), undefined);
