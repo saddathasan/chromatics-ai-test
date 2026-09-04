@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| **Current state** | Planning complete and committed. No application code yet. |
-| **Branch** | `feat/doc-processing-prototype` (commit `288eaa2`), cut off `main` |
-| **Next action** | Start **Milestone 1** on `ms/1-scaffold-domain` off `feat/doc-processing-prototype`. Tests first. |
+| **Current state** | Milestone 7 built on `ms/7-bulk-readme`: row selection + filter-scoped bulk retry, the dev panel, guide walkthroughs 5–6, the CDP driver committed under `scripts/`, and the README with all fourteen spec §8 sections and seven screenshots. 198 tests. Verification pass green. |
+| **Branch** | `feat/doc-processing-prototype` (merge `ms/2`), cut off `main` |
+| **Next action** | **Awaiting review.** [PR #1](https://github.com/saddathasan/chromatics-ai-test/pull/1) is open, `feat → main`: 56 commits, 90 files. Nothing outstanding on the build. |
 | **Blocking decisions** | None. Task-level choices proceed on the plan's recommendation and are logged. |
-| **Scheduled gates** | Milestone 3: davinci direction brief needs Saddat's approval before the prototype is built. Milestone 7: `feat → main` PR is human-reviewed. |
-| **Budget** | 14–18 h total · 0 h spent on implementation |
+| **Scheduled gates** | Milestone 3 gate cleared 2026-09-04 (all four questions approved). Milestone 7: `feat → main` PR is human-reviewed. |
+| **Budget** | 14–18 h total · ~17 h spent (M1–M7) |
 
 ## Document map
 
@@ -37,13 +37,14 @@ mandatory), `~/.claude/docs/git-workflow.md` (per-task commits, self-merge on gr
 | # | Milestone | Branch | Spec refs | Plan section | Status | PR | Session log |
 |---|---|---|---|---|---|---|---|
 | 0 | Planning | `feat/doc-processing-prototype` | all | — | ✅ Done (`288eaa2`) | — | `log/2026-09-04-gap-analysis.md`, `log/2026-09-04-planning.md` |
-| 1 | Scaffold + domain | `ms/1-scaffold-domain` | §2, §5 | Milestone 1 | ⬜ Not started | — | — |
-| 2 | Mock backend | `ms/2-mock-backend` | §3, §4 | Milestone 2 | ⬜ Not started | — | — |
-| 3 | Design direction (davinci) | `ms/3-design-direction` | §6 | Milestone 3 | ⬜ Not started · **approval gate** | — | — |
-| 4 | Dashboard | `ms/4-dashboard` | §5, §6.1 | Milestone 4 | ⬜ Not started | — | — |
-| 5 | Detail drawer | `ms/5-detail-drawer` | §2 (transitions), §6.2 | Milestone 5 | ⬜ Not started | — | — |
-| 6 | Upload | `ms/6-upload` | §5 (upload flow), §6.3 | Milestone 6 | ⬜ Not started | — | — |
-| 7 | Bulk, dev panel, README | `ms/7-bulk-readme` | §3 (bulk, sim), §6.4, §8 | Milestone 7 | ⬜ Not started · **human gate** (`feat → main`) | — | — |
+| 1 | Scaffold + domain | `ms/1-scaffold-domain` | §2, §5 | Milestone 1 | ✅ Merged (`e3d0654`) | merged locally, no remote | `log/2026-09-04-ms1-scaffold-domain.md` |
+| 2 | Mock backend | `ms/2-mock-backend` | §3, §4 | Milestone 2 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms2-mock-backend.md` |
+| 3 | Design direction (davinci) | `ms/3-design-direction` | §6 | Milestone 3 | ✅ Merged · gate cleared | merged locally, no remote | `log/2026-09-04-ms3-design-direction.md` |
+| 4 | Dashboard | `ms/4-dashboard` | §5, §6.1 | Milestone 4 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms4-dashboard.md` |
+| 5 | Detail drawer | `ms/5-detail-drawer` | §2 (transitions), §6.2 | Milestone 5 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms5-detail-drawer.md` |
+| 6 | Upload | `ms/6-upload` | §5 (upload flow), §6.3 | Milestone 6 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms6-upload.md` |
+| 6.5 | Tooltips + guide | `ms/6.5-guide` | — (added after M6; see deviations) | — | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms6.5-guide.md` |
+| 7 | Bulk, dev panel, README | `ms/7-bulk-readme` | §3 (bulk, sim), §6.4, §8 | Milestone 7 | ✅ Merged to `feat` · **PR open, awaiting review** | [#1](https://github.com/saddathasan/chromatics-ai-test/pull/1) | `log/2026-09-04-ms7-bulk-readme.md` |
 
 Status legend: ⬜ Not started · 🔶 In progress · 🔴 Blocked · ✅ Merged to `feat`.
 
@@ -65,72 +66,85 @@ Status legend: ⬜ Not started · 🔶 In progress · 🔴 Blocked · ✅ Merged
 Tick a task when its commit lands. Tick the Milestone when its PR is merged to `feat`.
 
 ### Milestone 1 — Scaffold + domain (~2 h) · plan: Milestone 1 · spec: §2, §5
-- [ ] Tests written first: `transitions.test.ts`, `derive.test.ts` (red)
-- [ ] Scaffold Vite + React + TS (pnpm), Tailwind 4, shadcn init, TanStack Router + Query, Vitest + Testing Library, ESLint/Prettier — each install approved
-- [ ] Root layout, `/` route with typed search-param schema, Query provider
-- [ ] `domain/types.ts`
-- [ ] `domain/transitions.ts` (green)
-- [ ] `domain/derive.ts` (green)
-- [ ] File header + export comments on every file
-- [ ] `pnpm test` · `pnpm typecheck` · `pnpm lint` green → PR `ms/1 → feat` → self-merge → hub log
-- [ ] **Milestone 1 merged**
+- [x] Tests written first: `transitions.test.ts`, `derive.test.ts` (red)
+- [x] Scaffold Vite + React + TS (pnpm), Tailwind 4, shadcn init, TanStack Router + Query, Vitest + Testing Library, ESLint/Prettier — each install approved
+- [x] Root layout, `/` route with typed search-param schema, Query provider
+- [x] `domain/types.ts`
+- [x] `domain/transitions.ts` (green)
+- [x] `domain/derive.ts` (green)
+- [x] File header + export comments on every file
+- [x] `pnpm test` · `pnpm typecheck` · `pnpm lint` green → PR `ms/1 → feat` → self-merge → hub log
+- [x] **Milestone 1 merged**
 
 ### Milestone 2 — Mock backend (~3 h) · plan: Milestone 2 · spec: §3, §4
-- [ ] Tests written first (msw/node): pagination edges, filters, determinism, retry, 409, bulk retry, overlay merge, counts
-- [ ] `mocks/generate.ts` (mulberry32, tables, `generateBase`, lazy `generateExtraction`)
-- [ ] `mocks/clock.ts` (virtual clock, `statusAt`, throughput/ETA)
-- [ ] `mocks/overlay.ts` (idb-keyval, debounced, reset) — install approved
-- [ ] `mocks/store.ts` (merge, filter/search/sort/paginate, counts)
-- [ ] `mocks/handlers.ts` (all routes, delay, outage 503, 409 mapping)
-- [ ] `mocks/browser.ts` + `mocks/node.ts`
-- [ ] `api/client.ts`, `keys.ts`, `queries.ts`, `mutations.ts`
-- [ ] Perf assertions pass (generate < 200 ms, list < 30 ms) → PR → self-merge → hub log
-- [ ] **Milestone 2 merged**
+- [x] Tests written first (msw/node): pagination edges, filters, determinism, retry, 409, bulk retry, overlay merge, counts
+- [x] `mocks/generate.ts` (mulberry32, tables, `generateBase`, lazy `generateExtraction`)
+- [x] `mocks/clock.ts` (virtual clock, `statusAt`, throughput/ETA)
+- [x] `mocks/overlay.ts` (idb-keyval, debounced, reset) — install approved
+- [x] `mocks/store.ts` (merge, filter/search/sort/paginate, counts)
+- [x] `mocks/handlers.ts` (all routes, delay, outage 503, 409 mapping)
+- [x] `mocks/browser.ts` + `mocks/node.ts`
+- [x] `api/client.ts`, `keys.ts`, `queries.ts`, `mutations.ts`
+- [x] Perf assertions pass (generate < 200 ms, list < 30 ms) → PR → self-merge → hub log
+- [x] **Milestone 2 merged**
 
 ### Milestone 3 — Design direction (~1.5 h) · plan: Milestone 3 · spec: §6
-- [ ] Run `davinci` with the prompt in the plan
-- [ ] **Saddat approves the direction brief** (gate)
-- [ ] HTML prototype of dashboard + drawer
-- [ ] Commit `docs/design/direction.md` + `docs/design/prototype.html` → PR → self-merge → hub log
-- [ ] **Milestone 3 merged**
+- [x] Run `davinci` with the prompt in the plan — 21 real screens (Mobbin) + WCAG 2.2, Primer and archival accessioning practice read directly
+- [x] **Saddat approves the direction brief** (gate) — all four questions approved 2026-09-04
+- [x] HTML prototype of dashboard + drawer, audited against `anti-slop.md` (0/12 marks)
+- [x] Commit `docs/design/direction.md` + `docs/design/prototype.html` (+ `palette.mjs`) → PR → self-merge → hub log
+- [x] **Milestone 3 merged**
 
-### Milestone 4 — Dashboard (~3 h) · plan: Milestone 4 · spec: §5, §6.1
-- [ ] Tests written first: FilterBar → URL, badges with text for every value, empty/error states, polling predicate
-- [ ] `StatsStrip` + `ProgressChart`
-- [ ] `FilterBar` bound to search params
-- [ ] `DocumentsTable` (TanStack Table, manual pagination/sort, badges, confidence)
-- [ ] Loading / empty / error states; polling rules
-- [ ] Throttled live region; keyboard pass
-- [ ] Screenshot self-check against direction brief → PR → self-merge → hub log
-- [ ] **Milestone 4 merged**
+### Milestone 4 — Dashboard (~3 h) · plan: Milestone 4 · spec: §5, §6.1 · **design: `docs/design/prototype.html`**
+- [x] Installs: `@fontsource/ibm-plex-{sans,mono}`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`. Vitest stays `node`; component files opt into jsdom per file. Tokens in `src/index.css`. No shadcn — see deviations
+- [x] Tests written first: FilterBar → onChange payloads, lane as glyph + word for all four lanes plus the raw status pair, all four table states, polling predicate
+- [x] `StatsStrip` with an inline sparkline (Recharts cut, approved)
+- [x] `FilterBar` bound to search params, debounced 300 ms
+- [x] `DocumentsTable` — plain table, server-side sort and paging, lane column, confidence + band, masked phone
+- [x] Loading / empty ×2 / error states; polling rules in `api/queries.ts`
+- [x] `aria-live` on the feed indicator and the row range; keyboard pass (`th scope`, sort buttons, visible focus)
+- [x] Screenshot self-check against the direction brief → PR → self-merge → hub log
+- [x] **Milestone 4 merged**
 
-### Milestone 5 — Detail drawer (~3 h) · plan: Milestone 5 · spec: §2, §6.2
-- [ ] Tests written first: six field statuses, Retry only if retryable, correct PATCH optimistic, focus return
-- [ ] Drawer shell on `doc` param, focus trap + return
-- [ ] `FieldList` + `FieldRow` (worst-first, flagged-only)
-- [ ] `ReviewActions` (Confirm / Correct / Reject / Retry) + mutations
-- [ ] `ProcessingTimeline` + error card
-- [ ] Screenshot self-check → PR → self-merge → hub log
-- [ ] **Milestone 5 merged**
+### Milestone 5 — Detail drawer (~3 h) · plan: Milestone 5 · spec: §2, §6.2 · **design: `docs/design/prototype.html`**
+- [x] Tests written first: six field statuses, Retry only if retryable, optimistic retry, focus return
+- [x] Worst-first ordering by field-status severity (`uncertain` first), not by `flaggedFields()` — that answers "is it flagged", this needs a rank
+- [x] Drawer shell on `doc` param — native `<dialog>`, no library; focus return deferred a tick
+- [x] `FieldList` + `FieldRow` (worst-first, flagged-only toggle, inline correction)
+- [x] `ReviewActions` (Confirm / Correct / Reject / Retry) + `api/mutations.ts`, retry optimistic
+- [x] `ProcessingTimeline` + error card with the retryable explanation
+- [x] Screenshot self-check, plus a live CDP pass over retry, close and focus return
+- [x] **Milestone 5 merged**
 
 ### Milestone 6 — Upload (~3 h) · plan: Milestone 6 · spec: §5 upload flow, §6.3
-- [ ] Tests written first: traversal 100-per-call, validator cases, queue concurrency + retry, chunker
-- [ ] `useFileSelection` (input, folder, drop traversal, chunked enumeration)
-- [ ] `validate.ts` + summary UI
-- [ ] `useUploadQueue` (concurrency 4, backoff, throttled aggregate, chunked POST)
-- [ ] `UploadDialog` + virtualized `QueueList`
-- [ ] Transition banner + dashboard invalidation
-- [ ] Screenshot self-check → PR → self-merge → hub log
-- [ ] **Milestone 6 merged**
+- [x] Tests written first: traversal 100-per-call, validator cases, queue concurrency + retry, chunker
+- [x] `useFileSelection` (input, folder, drop traversal) — no explicit chunker, see deviations
+- [x] `validate.ts` + summary UI (grouped by reason, in words)
+- [x] `useUploadQueue` (concurrency 4, backoff, throttled aggregate, chunked POST)
+- [x] `UploadDialog` + windowed `QueueList` (no virtualizer installed — see deviations)
+- [x] Completion panel with "View batch" + per-chunk dashboard invalidation
+- [x] Live CDP pass over select → start → cancel → view batch; two bugs fixed from it
+- [x] **Milestone 6 merged**
+
+### Milestone 6.5 — Tooltips + guide (~2.5 h) · added after M6, not in the original plan
+- [x] Tests written first: tooltip open delay / travel / Escape / describedby, glossary integrity, guide anchors
+- [x] `lib/glossary.ts` — 19 terms, a tooltip line and a full passage each
+- [x] `components/InfoTip.tsx` — hover with a 120 ms delay, plus focus and tap; `position: fixed` so the table's scroll containers cannot clip it
+- [x] Fifteen marks wired: stats strip, chip row, State and Conf. headers, drawer fields and actions, upload rate and refusals
+- [x] `/guide` route, six sections, linked from the app bar; every term anchored at `#term-<key>`
+- [x] Live CDP pass: delay, trigger→panel travel, Escape, keyboard focus, right-edge clipping, both colour schemes
+- [x] **Milestone 6.5 merged**
 
 ### Milestone 7 — Bulk, dev panel, README (~2 h) · plan: Milestone 7 · spec: §3, §6.4, §8
-- [ ] Tests written first: SelectionBar modes, bulk invalidation, DevPanel PATCH
-- [ ] `SelectionBar` + filter-scoped bulk retry
-- [ ] `DevPanel`
-- [ ] README per spec §8 (assumptions from gap-analysis §7 + original §27), `docs/screenshots/`
-- [ ] `verification-before-completion` pass
-- [ ] PR `feat → main` opened with precise summary, left for human review → hub README + log
-- [ ] **Milestone 7 merged to feat; Feature PR open**
+- [x] Tests written first: SelectionBar modes, bulk invalidation, DevPanel PATCH
+- [x] `SelectionBar` + filter-scoped bulk retry, plus the row selection M4 deferred
+- [x] `DevPanel` (native `<details>`)
+- [x] Guide walkthroughs 5 (retry in bulk) and 6 (force any state)
+- [x] `scripts/drive.mjs` (CDP driver) + `scripts/screenshots.mjs`
+- [x] README per spec §8 (17 assumptions), `docs/screenshots/` — 8 images
+- [x] `verification-before-completion` pass — 198 tests, typecheck, oxlint, build, prettier all green
+- [x] **Milestone 7 merged to feat**
+- [x] **PR `feat → main`** — [#1](https://github.com/saddathasan/chromatics-ai-test/pull/1), opened 2026-09-04 and left for human review
 
 ## Cut list (apply in order only if budget runs out)
 1. Dev panel (M7) · 2. "Retry all matching" (M7) · 3. Folder traversal, keep multi-file input (M6) · 4. Recharts chart (M4).
@@ -149,3 +163,219 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
 | Date | Milestone | Hours | Notes |
 |---|---|---|---|
 | 2026-09-04 | 0 Planning | — | Gap analysis, decisions, spec, plan (not counted against build budget) |
+| 2026-09-04 | 1 Scaffold + domain | ~1.5 | 46 tests, typecheck/lint/build green. Deviations logged below. |
+| 2026-09-04 | 2 Mock backend | ~2 | 77 tests. Measured at 100k: generate 71ms, filtered page 6ms, batch stats 5ms. |
+| 2026-09-04 | 3 Design direction | ~1.5 | Brief + prototype + verified palette. No source touched; 77 tests still green. |
+| 2026-09-04 | 4 Dashboard | ~2.5 | 121 tests. Two real bugs found by running the app, not by reading it. |
+| 2026-09-04 | 5 Detail drawer | ~2.5 | 148 tests. No new dependency — native `<dialog>` covers the focus trap. |
+| 2026-09-04 | 6 Upload | ~2.5 | 168 tests. 600 real files driven through a real browser; two bugs found that way. |
+| 2026-09-04 | 6.5 Tooltips + guide | ~2.5 | 181 tests. Added after M6: the screen was not self-explaining. No new dependency. |
+| 2026-09-04 | 7 Bulk, dev panel, README | ~2 | 198 tests. Dev panel kept — the budget held. Nothing from the cut list was used. |
+
+## Deviations from the plan (running log)
+
+- **M1**: Vite 8 template ships **oxlint**, not ESLint — kept it, no ESLint installed.
+- **M1**: shadcn and Testing Library + jsdom **deferred to M4** (shadcn theme depends on the M3
+  design direction; nothing to render-test yet). `pnpm test` currently runs in the `node` environment;
+  M4 must switch Vitest to `jsdom` and install `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`.
+- **M1**: TanStack Router routes are **code-based**, not file-based — one screen plus a drawer does not
+  justify a codegen step. Search params validated by a hand-written parser (`src/app/search.ts`), no zod.
+- **M1**: `lane()` routes a **retryable failure to `needs_review`**, not `auto_accepted` as spec §2 implied.
+  A retryable failure needs a human click, so it belongs in the attention bucket; only dead-end failures
+  and human rejections go to `recapture`. Spec §2 wording is superseded by `src/domain/derive.ts`.
+- **M1**: `documentConfidence` is the min over fields that **carry** a confidence (missing/unreadable
+  fields have none and are excluded); they still force `needs_review` through `reviewOutcome`.
+
+- **M2**: The mock's processing state is **derived from a virtual clock**, not advanced by a scheduler.
+  Each document carries `startOffset` and `duration`; status is a function of time, so 100,000 documents
+  progress with zero writes and a reload resumes exactly where it left off. The clock accumulates elapsed
+  time rather than reading from a fixed origin, so changing the speed dial cannot rewrite the past.
+- **M2**: `Patch` (the overlay record) is **structurally unable to hold `status`, timestamps or `error`**.
+  An earlier version stored the whole mutated document, which froze a retried document at `queued` forever.
+  The type now permits only `base`, `reviewStatus` (when a human decided), `attempts` and `extraction`.
+- **M2**: `list()` filters on cheap derived state and materializes **only the returned page**. Filtering on
+  full documents cost 65ms per request on the main thread; this is 6ms. Same fix applied to `batchStats`.
+- **M2**: MSW handler paths are origin-agnostic (`*/api/...`) so one set of handlers serves the browser
+  (relative fetch) and the Node test runner (absolute fetch). `src/api/client.ts` prefixes an origin under Node.
+- **M2**: `api/queries.ts` and `api/mutations.ts` (React Query hooks) **deferred to M4/M5**, where their
+  consumers live. M2 ships `api/client.ts` only. The M4 checklist item "polling rules in api/queries.ts" stands.
+- **M2**: The dashboard placeholder now reads real batch counts and a document page. It is a browser smoke
+  test for the service worker, which the Node suite cannot cover. M4 replaces it.
+- **M2 open risk**: the MSW **browser** path (service-worker registration) is not covered by an automated
+  test — only the Node path is. First `pnpm dev` of M4 confirms it visually.
+
+- **M3**: The status column is **lane-first**, superseding spec §6.1's two badges. One column shows the
+  derived `lane` as glyph + word, with the raw `status`/`reviewStatus` pair in 11px text beneath it.
+  Two pills per row across thirty rows is unreadable, and `lane()` in `src/domain/derive.ts` already
+  encodes the question an operator actually asks. Approved at the M3 gate.
+- **M3**: **Colour is reserved for state.** There is no brand accent hue; actions are ink on paper, so
+  the only saturated colour anywhere is a status. The five status colours sit within 20% relative
+  luminance of each other on purpose, which is why the glyph-and-word rule (WCAG 2.2 SC 1.4.1, Level A)
+  is load-bearing and can never be dropped for a narrow column.
+- **M3**: Palette is **computed and verified**, not chosen by eye — `docs/design/palette.mjs` does
+  OKLCH → sRGB plus WCAG 2.2 ratios with no dependencies. Two candidates were desaturated because they
+  clipped outside sRGB. Every pair clears its target in both schemes. Re-run it if a token changes.
+- **M3**: The table row hairlines deliberately do **not** meet 3:1. SC 1.4.11 covers UI components and
+  graphical objects; a row separator is a reading aid and the data is carried entirely by text. Input
+  borders (`field`) and focus rings (`focus`) are in scope and both clear 3:1 in both schemes.
+- **M3**: Fields state the **defect in words**, with the confidence number secondary — taken from
+  archival condition-survey practice, where "good / fair / poor" grades are treated as useless and the
+  specific defect is recorded instead. This is why the six `FieldStatus` values must never collapse
+  into an em-dash in the UI.
+- **M3 open risk**: `davinci`'s source registry needs re-vetting on three entries — IBM Carbon and
+  Atlassian returned truncated or navigation-only content, and `polaris-react.shopify.com` now
+  301-redirects to `shopify.dev`. None is cited in the brief, so no decision rests on them.
+- **M3 unverified**: the prototype renders in a fallback face (a self-contained file cannot load
+  webfonts, and the Google CDN is ruled out on GDPR grounds) — resolved at M4 by the approved
+  self-hosted install. No APCA pass and no colour-blindness simulator pass; the argument for the
+  status system is structural rather than measured.
+
+- **M4**: **Recharts, TanStack Table and shadcn were all cut** (approved). The chart is a
+  stroke-only sparkline with no axes, fill or tooltip — one `<polyline>`, and Recharts was already
+  #4 on the cut list. The table is server-side for sort, filter and paging with fixed columns and no
+  reorder, visibility or client sort, so TanStack Table would have wrapped a `.map()`. Every control
+  the dashboard needs is a native element. Radix is expected at M5, where the drawer needs a real
+  focus trap — the first dependency this project needs for behaviour rather than appearance.
+- **M4**: **Count chips filter on status and review, not on lane.** The API has no lane axis, and
+  the needs-review lane spans `review=needs_review` *and* retryable failures, which no single server
+  filter expresses. Chips are All / In flight / Needs review / Failed / Completed; the derived lane
+  stays a per-row reading in the table. Exact lane chips would need lane counts in `batchStats` plus
+  a lane filter on the list endpoint.
+- **M4**: **A flagged row names the field at fault** — "completed · date unreadable" rather than
+  "completed · needs review". Without it, "Needs review" beside a confidence of `0.97 High` reads as
+  a contradiction: the document is flagged for a field that carries no confidence at all, which
+  `documentConfidence` correctly excludes. `flaggedFields()` is now exported from `derive.ts` and
+  backs both `reviewOutcome` and the table, so the two can never disagree.
+- **M4**: **Row selection is not in M4.** Nothing can act on a selected row until M7's
+  `SelectionBar`, and a checkbox that does nothing is worse than no checkbox. M7 adds both together.
+- **M4**: The list endpoint now **attaches the extraction to the returned page**. Type and
+  confidence had no data source otherwise — only `GET /documents/:id` carried one. Generated for 50
+  rows, never the archive; the filtered-page perf assertion still passes.
+- **M4**: Vitest stays in the `node` environment; component tests opt in with a
+  `// @vitest-environment jsdom` docblock. `globals: true` was needed so Testing Library's
+  auto-cleanup finds an `afterEach` — without it the DOM accumulates across tests in a file.
+- **M4 bug fixed**: `overlay.ts` guarded on IndexedDB *existing*, not *working*. A blocked or
+  upgrading connection leaves the open request pending forever, and startup awaits it before
+  rendering, so the app showed a blank page indefinitely. A promise that never settles cannot be
+  caught, so all three calls now race a 2 s timeout. **This closes the M2 open risk** — the MSW
+  browser service-worker path is confirmed working, 50 rows rendering from the live mock.
+- **M4 note on tooling**: Chrome's `--virtual-time-budget` never completes service-worker
+  registration, so the headless `--screenshot` flag cannot photograph this app. Screenshots are taken
+  by driving a real browser over CDP (`WebSocket` is global in Node 24, no dependency). Worth
+  remembering for M5–M7 screenshot checks.
+
+- **M5**: The drawer is a native **`<dialog>` with `showModal()`** — no dialog library, and none is
+  expected for M6 either. The platform maintains the focus trap, the inert background,
+  Escape-to-close and the backdrop; `<form method="dialog">` closes it without a handler. This is
+  what made the M4 note about "the first install this project actually needs" wrong.
+- **M5**: **`can()` in `transitions.ts` decides which buttons exist.** The UI reads its affordances
+  from the same table the server enforces, so it cannot offer a move that would come back as a 409.
+  Building it surfaced a real gap and **spec §2's reject guard is superseded**: reject is now refused
+  when the document is already rejected, not only when confirmed. A reject that changes nothing is
+  not a transition, and `confirm` was already refused the same way.
+- **M5**: Worst-first ordering ranks by **field-status severity with `uncertain` first**, not by
+  `flaggedFields()`. A value that is present and wrong is the failure the product exists to prevent;
+  an unreadable or missing field is at least obviously empty. `flaggedFields()` answers "is this
+  flagged" — a different question from "how bad is it" — so both now exist.
+- **M5**: A `not_applicable` field offers **no correction affordance and no "no value recorded"**
+  line. It is not missing data, and inviting an operator to fill it in is inviting bad data.
+- **M5**: Retry is **optimistic, predicted by running `transition()` itself** rather than by
+  hand-writing the expected next state, so the optimistic row cannot disagree with the server's.
+- **M5 bug fixed**: `generate.ts` produced legible raw text for `unreadable` fields, so the drawer
+  showed a readable "Kurigram" directly under "present, but could not be read".
+- **M5 caution**: **jsdom 30 still has no `HTMLDialogElement.showModal`.** The drawer test shims it,
+  which means the tests assert our own behaviour and never the platform's. Focus return passed in
+  jsdom while being **broken in a real browser** — the browser's focus fixup runs as the dialog
+  leaves the DOM and overwrote our call, fixed by deferring a tick. Anything resting on `<dialog>`
+  semantics must be checked in a real browser; the CDP script is the way.
+
+- **M6**: **No virtualizer installed.** TanStack Virtual earns its place with variable row
+  heights; the queue's rows are a fixed 26px, which makes the window a subtraction rather than a
+  measurement — twenty lines in `QueueList.tsx`. 10,000 items render under thirty rows, asserted.
+  `ponytail:` comment names the ceiling: a variable-height queue needs a real virtualizer.
+- **M6**: **No explicit chunker for enumeration.** Every `readEntries` call and every
+  `entry.file()` is awaited, so the traversal already yields to the event loop between batches —
+  there is no long synchronous stretch for `scheduler.yield` to break up. Progress is reported
+  every 100 files so the dialog counts up while a large folder is read.
+- **M6**: The transition banner is the **dialog's own completion panel**, not a page-level banner.
+  It states the batch, the failures and (after a cancel) what was never sent, and its "View batch"
+  navigates to `/?batch=…`. A second surface saying the same thing would have to be dismissed too.
+- **M6**: The engine (`queue.ts`) is **transport-free and React-free** — the caller supplies `send`
+  and `flush`. Concurrency, the single retry and the 500-file chunking are therefore tested with
+  plain functions, no DOM and no server, which is why those tests run in the `node` environment.
+- **M6 bug fixed**: `store.addDocuments` built the document id out of the client's key, so the
+  archive's identifier column read `doc_up_batch_1_x_kurigram/intake.pdf:112:1788525508618` — a
+  path, a size and a **file modification time from the operator's disk**, leaked into a document id
+  and wide enough to collapse the rest of the table. The server mints `doc_up_<n>` now and keeps
+  the client key only for idempotency. Found by running an upload, not by reading the code.
+- **M6 bug fixed**: after a cancel the dialog said only "93 documents are now processing", which
+  reads as if the other 206 went through. It names all three outcomes now.
+- **M6 note**: uploaded documents live in `extraBase`, which is **not persisted** — a reload loses
+  them, exactly as it loses an in-flight queue. Both belong in the README's known limitations (M7).
+
+- **M6.5**: **Added after Milestone 6, not in the original plan.** The dashboard encodes a lot of
+  domain reasoning — two orthogonal status axes collapsed into a lane, confidence as a minimum
+  over only the fields that carry one, six field statuses — and none of it was explained anywhere
+  a person would look. Raised by Saddat looking at the finished screen; if the person who
+  commissioned it cannot read it, an evaluator opening it cold has no chance.
+- **M6.5**: **One glossary, two surfaces.** `lib/glossary.ts` holds all nineteen terms with a
+  short line and a full passage. The tooltip renders the short line, `/guide` renders the passage
+  under `#term-<key>`, and the tooltip's "Read more" links there. A test asserts every term has an
+  anchor, so a tip can never promise a definition the guide does not carry. Same reason
+  `lib/labels.ts` exists.
+- **M6.5**: The tooltip is **hover, plus focus and tap**. Hover alone would exclude every keyboard
+  and touch user (WCAG 2.2 SC 1.4.13, which also requires it be dismissible and that the pointer be
+  able to travel into it). The pointer gets a 120 ms open delay so a cursor crossing the screen does
+  not strobe every tip it passes; focus and Escape act immediately, because those are explicit.
+- **M6.5**: The panel is **`position: fixed`, measured as it opens** — not absolutely positioned in
+  its parent. The table sits in scroll containers and a tip beside the right-hand columns would be
+  clipped in half by them. Verified in a real browser that the rightmost header tip stays on screen.
+  Native `popover="hint"` with anchor positioning is the eventual answer, but anchor positioning is
+  Chromium-only today and this may well be opened in Safari.
+- **M6.5**: The guide is an **in-app route, not a markdown file**. The person who needs it is
+  standing in front of the dashboard, and a route can render the real components — the lane table
+  shows actual `StatusMark`s, so it cannot quietly describe a screen that has moved on. It is
+  router-free like the other feature components, so navigation lives in the app bar.
+- **M6.5**: **Fifteen marks, not forty.** Nothing on File, Person or Uploaded. A mark beside an
+  obvious label reads as decoration and devalues the ones that carry weight. Four terms
+  (identifier, margin mark, masked phone, timeline) are documented in the guide without a mark
+  on screen.
+- **M6.5**: Walkthroughs for bulk retry and the dev panel are **deliberately absent** until M7
+  builds those features. A guide describing buttons an evaluator cannot find is worse than one
+  that says nothing.
+- **M6.5 note**: `ReviewActions`' tests matched the retry button on a substring, so the new "About
+  retryable" mark collided with them. Tightened to exact names — the assertion should always have
+  been exact.
+- **M6.5 note**: running `prettier --write src/features` reformatted **nine files this milestone
+  never touched** (trailing commas, wrapping) because they had never been run through the repo's
+  own `.prettierrc`. Harmless, but 26 files across the repo still do not match it. Worth one
+  `pnpm format` commit before the M7 diff, so formatting noise does not obscure the final
+  human-reviewed PR.
+
+- **M7**: **`pnpm format` was a trap and is now fixed.** The script is `prettier --write .` with no
+  ignore file, so running it rewrote `pnpm-lock.yaml`, the MSW worker that msw owns and regenerates,
+  the M3 design prototype and every markdown doc — 3,196 lines to format 133 lines of source.
+  Added `.prettierignore` and did the reformat as its own commit, so this milestone and the final
+  human-reviewed PR carry no formatting noise.
+- **M7**: **The bulk bar promises no count for the filter-scoped retry**, superseding the plan's
+  "Retry all M matching current filter". The endpoint moves only retryable failures, and the archive
+  cannot count those within an arbitrary filter without materialising every match — so `M` would
+  have been a number the button could not honour. It reports the server's `affected` afterwards
+  instead. The *selected* count is exact, because those rows are already on screen: six selected can
+  read "Retry 2 selected".
+- **M7**: **Selection is page-scoped and derived during render**, not reset from an effect. The
+  stored set carries the view key it was made under and is simply not read once the view changes,
+  so there is no second render to cascade from. Carrying ids across pages would mean holding a
+  selection the operator can no longer see; the filter-scoped action covers that need properly.
+- **M7**: **Retrying selected rows is N requests, not one.** The API has no "retry these ids" route,
+  and inventing one in the mock would be a contract no real backend agreed to. `Promise.allSettled`,
+  and the count reports what actually succeeded.
+- **M7**: The **dev panel survived the cut list** — the budget held at ~17 h of 14–18 h. Nothing on
+  the cut list was used at any point in the build.
+- **M7**: `scripts/drive.mjs` is the CDP driver, **committed at last** after being rewritten from
+  scratch in M4, M5, M6 and M6.5. `scripts/screenshots.mjs` produces the README images from it.
+- **M7 note**: the remote had **no branches at all** before this milestone. `main` was created at
+  `6d3289d` — the two planning-doc commits — so the PR diff is the implementation itself, with the
+  gap analysis, ADR and design spec already on the base for context. Pushing `main` needed
+  `GIT_GUARD_ALLOW=1`, since the git-guard hook holds protected branches to PR-only movement; used
+  once, on Saddat's explicit instruction, to create the branch the gate PR targets.
