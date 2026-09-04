@@ -9,7 +9,7 @@
 |---|---|
 | **Current state** | Milestone 7 built on `ms/7-bulk-readme`: row selection + filter-scoped bulk retry, the dev panel, guide walkthroughs 5–6, the CDP driver committed under `scripts/`, and the README with all fourteen spec §8 sections and seven screenshots. 198 tests. Verification pass green. |
 | **Branch** | `feat/doc-processing-prototype` (merge `ms/2`), cut off `main` |
-| **Next action** | **Human gate.** `ms/7` merges to `feat`, and the `feat → main` PR is Saddat's to open — the remote (`github.com/saddathasan/chromatics-ai-test`) is empty, so nothing has ever been pushed and `main` does not exist yet. Pushing is his call, not the agent's. |
+| **Next action** | **Awaiting review.** [PR #1](https://github.com/saddathasan/chromatics-ai-test/pull/1) is open, `feat → main`: 56 commits, 90 files. Nothing outstanding on the build. |
 | **Blocking decisions** | None. Task-level choices proceed on the plan's recommendation and are logged. |
 | **Scheduled gates** | Milestone 3 gate cleared 2026-09-04 (all four questions approved). Milestone 7: `feat → main` PR is human-reviewed. |
 | **Budget** | 14–18 h total · ~17 h spent (M1–M7) |
@@ -44,7 +44,7 @@ mandatory), `~/.claude/docs/git-workflow.md` (per-task commits, self-merge on gr
 | 5 | Detail drawer | `ms/5-detail-drawer` | §2 (transitions), §6.2 | Milestone 5 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms5-detail-drawer.md` |
 | 6 | Upload | `ms/6-upload` | §5 (upload flow), §6.3 | Milestone 6 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms6-upload.md` |
 | 6.5 | Tooltips + guide | `ms/6.5-guide` | — (added after M6; see deviations) | — | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms6.5-guide.md` |
-| 7 | Bulk, dev panel, README | `ms/7-bulk-readme` | §3 (bulk, sim), §6.4, §8 | Milestone 7 | ✅ Merged to `feat` · **awaiting human gate** | `feat → main` not opened; remote is empty | `log/2026-09-04-ms7-bulk-readme.md` |
+| 7 | Bulk, dev panel, README | `ms/7-bulk-readme` | §3 (bulk, sim), §6.4, §8 | Milestone 7 | ✅ Merged to `feat` · **PR open, awaiting review** | [#1](https://github.com/saddathasan/chromatics-ai-test/pull/1) | `log/2026-09-04-ms7-bulk-readme.md` |
 
 Status legend: ⬜ Not started · 🔶 In progress · 🔴 Blocked · ✅ Merged to `feat`.
 
@@ -144,7 +144,7 @@ Tick a task when its commit lands. Tick the Milestone when its PR is merged to `
 - [x] README per spec §8 (17 assumptions), `docs/screenshots/` — 8 images
 - [x] `verification-before-completion` pass — 198 tests, typecheck, oxlint, build, prettier all green
 - [x] **Milestone 7 merged to feat**
-- [ ] **PR `feat → main`** — blocked on a human: the remote is empty and nothing has been pushed
+- [x] **PR `feat → main`** — [#1](https://github.com/saddathasan/chromatics-ai-test/pull/1), opened 2026-09-04 and left for human review
 
 ## Cut list (apply in order only if budget runs out)
 1. Dev panel (M7) · 2. "Retry all matching" (M7) · 3. Folder traversal, keep multi-file input (M6) · 4. Recharts chart (M4).
@@ -374,6 +374,8 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
   the cut list was used at any point in the build.
 - **M7**: `scripts/drive.mjs` is the CDP driver, **committed at last** after being rewritten from
   scratch in M4, M5, M6 and M6.5. `scripts/screenshots.mjs` produces the README images from it.
-- **M7 note**: the remote `github.com/saddathasan/chromatics-ai-test` **has no branches** — nothing
-  has ever been pushed, and `main` does not exist locally or remotely. The final `feat → main` PR
-  therefore cannot be opened by the agent: it needs a first push, which is Saddat's call.
+- **M7 note**: the remote had **no branches at all** before this milestone. `main` was created at
+  `6d3289d` — the two planning-doc commits — so the PR diff is the implementation itself, with the
+  gap analysis, ADR and design spec already on the base for context. Pushing `main` needed
+  `GIT_GUARD_ALLOW=1`, since the git-guard hook holds protected branches to PR-only movement; used
+  once, on Saddat's explicit instruction, to create the branch the gate PR targets.
