@@ -11,6 +11,7 @@ import {
   RouterProvider,
 } from '@tanstack/react-router';
 import { Dashboard } from '../features/dashboard/Dashboard';
+import { UploadButton } from '../features/upload/UploadButton';
 import { parseDocumentSearch } from './search';
 
 /** Retries are the mock backend's job to trigger; a failed read shows its error state instead. */
@@ -24,6 +25,8 @@ const rootRoute = createRootRoute({
       <header className="mx-auto flex max-w-[1360px] flex-wrap items-baseline gap-4 border-b border-rule px-6 pt-6 pb-4">
         <h1 className="text-lg font-semibold">Archive digitisation</h1>
         <span className="text-[11px] text-ink-muted">Alo Relief Trust</span>
+        <span className="flex-1" />
+        <UploadButton />
       </header>
       <Outlet />
     </div>

@@ -17,7 +17,12 @@ function fakeDirectory(name: string, childCount: number): FileSystemEntry {
       setTimeout(() => onSuccess(batch), 0);
     },
   };
-  return { isFile: false, isDirectory: true, name, createReader: () => reader } as FileSystemEntry;
+  return {
+    isFile: false,
+    isDirectory: true,
+    name,
+    createReader: () => reader,
+  } as unknown as FileSystemEntry;
 }
 
 function fakeFile(name: string): FileSystemEntry {
@@ -25,7 +30,8 @@ function fakeFile(name: string): FileSystemEntry {
     isFile: true,
     isDirectory: false,
     name,
-    file: (onSuccess: (file: File) => void) => setTimeout(() => onSuccess(new File(['x'], name)), 0),
+    file: (onSuccess: (file: File) => void) =>
+      setTimeout(() => onSuccess(new File(['x'], name)), 0),
   } as unknown as FileSystemEntry;
 }
 
@@ -51,7 +57,7 @@ describe('filesFromEntries', () => {
           },
         };
       },
-    } as FileSystemEntry;
+    } as unknown as FileSystemEntry;
 
     const files = await filesFromEntries([root]);
     expect(files.map((f) => f.name).sort()).toEqual([

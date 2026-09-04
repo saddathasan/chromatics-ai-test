@@ -13,7 +13,7 @@ async function readAll(reader: FileSystemDirectoryReader): Promise<FileSystemEnt
   const all: FileSystemEntry[] = [];
   for (;;) {
     const batch = await new Promise<FileSystemEntry[]>((resolve, reject) =>
-      reader.readEntries(resolve, reject)
+      reader.readEntries(resolve, reject),
     );
     if (batch.length === 0) return all;
     all.push(...batch);
@@ -33,7 +33,7 @@ const PROGRESS_EVERY = 100;
  */
 export async function filesFromEntries(
   entries: FileSystemEntry[],
-  onCount?: (found: number) => void
+  onCount?: (found: number) => void,
 ): Promise<File[]> {
   const files: File[] = [];
   const queue = [...entries];
@@ -56,7 +56,7 @@ export async function filesFromEntries(
  */
 export function filesFromDrop(
   transfer: DataTransfer,
-  onCount?: (found: number) => void
+  onCount?: (found: number) => void,
 ): Promise<File[]> {
   const entries = [...transfer.items]
     .map((item) => item.webkitGetAsEntry())

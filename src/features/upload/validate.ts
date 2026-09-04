@@ -36,7 +36,7 @@ const mimeOf = (file: File) => ACCEPTED[file.name.split('.').pop()?.toLowerCase(
  */
 export function validate(
   files: File[],
-  existing: QueueItem[] = []
+  existing: QueueItem[] = [],
 ): { accepted: QueueItem[]; skipped: Skipped[] } {
   const seen = new Set(existing.map((item) => item.key));
   const accepted: QueueItem[] = [];

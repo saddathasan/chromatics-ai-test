@@ -34,7 +34,7 @@ describe('runQueue', () => {
           await new Promise((r) => setTimeout(r, 1));
           live--;
         },
-      })
+      }),
     );
     expect(peak).toBe(4);
   });
@@ -49,7 +49,7 @@ describe('runQueue', () => {
           attemptsSeen.push(item.attempts);
           throw new Error('network');
         },
-      })
+      }),
     );
     expect(attemptsSeen).toEqual([0, 1]);
     expect(queue[0]).toMatchObject({ state: 'failed', attempts: 1 });
@@ -67,20 +67,20 @@ describe('runQueue', () => {
             throw new Error('network');
           }
         },
-      })
+      }),
     );
     expect(queue[0].state).toBe('done');
   });
 
   it('posts transferred files in chunks, so 1,001 files are three requests', async () => {
-    const flush = vi.fn(async () => {});
+    const flush = vi.fn(async (_batch: QueueItem[]) => {});
     await runQueue(items(1001), options({ flush }));
     expect(flush).toHaveBeenCalledTimes(3);
-    expect(flush.mock.calls.map((c) => (c[0] as QueueItem[]).length)).toEqual([500, 500, 1]);
+    expect(flush.mock.calls.map((c) => c[0].length)).toEqual([500, 500, 1]);
   });
 
   it('never posts a file that failed to transfer', async () => {
-    const flush = vi.fn(async () => {});
+    const flush = vi.fn(async (_batch: QueueItem[]) => {});
     await runQueue(
       items(4),
       options({
@@ -88,15 +88,15 @@ describe('runQueue', () => {
         send: async (item: QueueItem) => {
           if (item.key === 'k2') throw new Error('network');
         },
-      })
+      }),
     );
-    expect(flush.mock.calls[0][0].map((i: QueueItem) => i.key)).not.toContain('k2');
+    expect(flush.mock.calls[0][0].map((i) => i.key)).not.toContain('k2');
     expect(flush.mock.calls[0][0]).toHaveLength(3);
   });
 
   it('stops pulling work once cancelled, and still posts what already transferred', async () => {
     const control = new AbortController();
-    const flush = vi.fn(async () => {});
+    const flush = vi.fn(async (_batch: QueueItem[]) => {});
     const queue = items(100);
     await runQueue(
       queue,
@@ -107,7 +107,7 @@ describe('runQueue', () => {
           if (queue.filter((i) => i.state === 'done').length >= 8) control.abort();
           await new Promise((r) => setTimeout(r, 0));
         },
-      })
+      }),
     );
     const done = queue.filter((i) => i.state === 'done').length;
     expect(done).toBeGreaterThan(0);
