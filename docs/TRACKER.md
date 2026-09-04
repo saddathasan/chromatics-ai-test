@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| **Current state** | Milestone 6 merged. Bulk upload works end to end against a real browser: 600 files selected, validated, transferred four at a time, registered in chunks of 500, and processing on the dashboard. Cancel and failed-only both verified. 168 tests. |
+| **Current state** | Milestone 6.5 merged. Hover tooltips on the fifteen things that needed explaining, and a full guide at `/guide` linked from the app bar — orientation, four walkthroughs, complete reference, the simulation, and the decisions behind the build. 181 tests. |
 | **Branch** | `feat/doc-processing-prototype` (merge `ms/2`), cut off `main` |
-| **Next action** | Start **Milestone 7** on `ms/7-bulk-readme`. No installs expected. The screenshots for the README come from the CDP script (see the M4 tooling note); M6's run already covers the upload flow. This is the human gate: the `feat → main` PR is opened and left for review. |
+| **Next action** | Start **Milestone 7** on `ms/7-bulk-readme`. No installs expected. Two additions from the M6.5 decision: the guide needs its walkthroughs 5 and 6 written **with** the bulk-retry and dev-panel features, and the CDP script should be committed under `scripts/` rather than rewritten a fifth time. This is the human gate: the `feat → main` PR is opened and left for review. |
 | **Blocking decisions** | None. Task-level choices proceed on the plan's recommendation and are logged. |
 | **Scheduled gates** | Milestone 3 gate cleared 2026-09-04 (all four questions approved). Milestone 7: `feat → main` PR is human-reviewed. |
-| **Budget** | 14–18 h total · ~12.5 h spent (M1–M6) |
+| **Budget** | 14–18 h total · ~15 h spent (M1–M6.5) |
 
 ## Document map
 
@@ -43,6 +43,7 @@ mandatory), `~/.claude/docs/git-workflow.md` (per-task commits, self-merge on gr
 | 4 | Dashboard | `ms/4-dashboard` | §5, §6.1 | Milestone 4 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms4-dashboard.md` |
 | 5 | Detail drawer | `ms/5-detail-drawer` | §2 (transitions), §6.2 | Milestone 5 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms5-detail-drawer.md` |
 | 6 | Upload | `ms/6-upload` | §5 (upload flow), §6.3 | Milestone 6 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms6-upload.md` |
+| 6.5 | Tooltips + guide | `ms/6.5-guide` | — (added after M6; see deviations) | — | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms6.5-guide.md` |
 | 7 | Bulk, dev panel, README | `ms/7-bulk-readme` | §3 (bulk, sim), §6.4, §8 | Milestone 7 | ⬜ Not started · **human gate** (`feat → main`) | — | — |
 
 Status legend: ⬜ Not started · 🔶 In progress · 🔴 Blocked · ✅ Merged to `feat`.
@@ -125,10 +126,21 @@ Tick a task when its commit lands. Tick the Milestone when its PR is merged to `
 - [x] Live CDP pass over select → start → cancel → view batch; two bugs fixed from it
 - [x] **Milestone 6 merged**
 
+### Milestone 6.5 — Tooltips + guide (~2.5 h) · added after M6, not in the original plan
+- [x] Tests written first: tooltip open delay / travel / Escape / describedby, glossary integrity, guide anchors
+- [x] `lib/glossary.ts` — 19 terms, a tooltip line and a full passage each
+- [x] `components/InfoTip.tsx` — hover with a 120 ms delay, plus focus and tap; `position: fixed` so the table's scroll containers cannot clip it
+- [x] Fifteen marks wired: stats strip, chip row, State and Conf. headers, drawer fields and actions, upload rate and refusals
+- [x] `/guide` route, six sections, linked from the app bar; every term anchored at `#term-<key>`
+- [x] Live CDP pass: delay, trigger→panel travel, Escape, keyboard focus, right-edge clipping, both colour schemes
+- [x] **Milestone 6.5 merged**
+
 ### Milestone 7 — Bulk, dev panel, README (~2 h) · plan: Milestone 7 · spec: §3, §6.4, §8
 - [ ] Tests written first: SelectionBar modes, bulk invalidation, DevPanel PATCH
 - [ ] `SelectionBar` + filter-scoped bulk retry
 - [ ] `DevPanel`
+- [ ] Guide walkthroughs 5 (retry in bulk) and 6 (force any state) — written with the features, per the M6.5 decision
+- [ ] Commit the CDP screenshot script under `scripts/`
 - [ ] README per spec §8 (assumptions from gap-analysis §7 + original §27), `docs/screenshots/`
 - [ ] `verification-before-completion` pass
 - [ ] PR `feat → main` opened with precise summary, left for human review → hub README + log
@@ -157,6 +169,7 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
 | 2026-09-04 | 4 Dashboard | ~2.5 | 121 tests. Two real bugs found by running the app, not by reading it. |
 | 2026-09-04 | 5 Detail drawer | ~2.5 | 148 tests. No new dependency — native `<dialog>` covers the focus trap. |
 | 2026-09-04 | 6 Upload | ~2.5 | 168 tests. 600 real files driven through a real browser; two bugs found that way. |
+| 2026-09-04 | 6.5 Tooltips + guide | ~2.5 | 181 tests. Added after M6: the screen was not self-explaining. No new dependency. |
 
 ## Deviations from the plan (running log)
 
@@ -298,3 +311,42 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
   reads as if the other 206 went through. It names all three outcomes now.
 - **M6 note**: uploaded documents live in `extraBase`, which is **not persisted** — a reload loses
   them, exactly as it loses an in-flight queue. Both belong in the README's known limitations (M7).
+
+- **M6.5**: **Added after Milestone 6, not in the original plan.** The dashboard encodes a lot of
+  domain reasoning — two orthogonal status axes collapsed into a lane, confidence as a minimum
+  over only the fields that carry one, six field statuses — and none of it was explained anywhere
+  a person would look. Raised by Saddat looking at the finished screen; if the person who
+  commissioned it cannot read it, an evaluator opening it cold has no chance.
+- **M6.5**: **One glossary, two surfaces.** `lib/glossary.ts` holds all nineteen terms with a
+  short line and a full passage. The tooltip renders the short line, `/guide` renders the passage
+  under `#term-<key>`, and the tooltip's "Read more" links there. A test asserts every term has an
+  anchor, so a tip can never promise a definition the guide does not carry. Same reason
+  `lib/labels.ts` exists.
+- **M6.5**: The tooltip is **hover, plus focus and tap**. Hover alone would exclude every keyboard
+  and touch user (WCAG 2.2 SC 1.4.13, which also requires it be dismissible and that the pointer be
+  able to travel into it). The pointer gets a 120 ms open delay so a cursor crossing the screen does
+  not strobe every tip it passes; focus and Escape act immediately, because those are explicit.
+- **M6.5**: The panel is **`position: fixed`, measured as it opens** — not absolutely positioned in
+  its parent. The table sits in scroll containers and a tip beside the right-hand columns would be
+  clipped in half by them. Verified in a real browser that the rightmost header tip stays on screen.
+  Native `popover="hint"` with anchor positioning is the eventual answer, but anchor positioning is
+  Chromium-only today and this may well be opened in Safari.
+- **M6.5**: The guide is an **in-app route, not a markdown file**. The person who needs it is
+  standing in front of the dashboard, and a route can render the real components — the lane table
+  shows actual `StatusMark`s, so it cannot quietly describe a screen that has moved on. It is
+  router-free like the other feature components, so navigation lives in the app bar.
+- **M6.5**: **Fifteen marks, not forty.** Nothing on File, Person or Uploaded. A mark beside an
+  obvious label reads as decoration and devalues the ones that carry weight. Four terms
+  (identifier, margin mark, masked phone, timeline) are documented in the guide without a mark
+  on screen.
+- **M6.5**: Walkthroughs for bulk retry and the dev panel are **deliberately absent** until M7
+  builds those features. A guide describing buttons an evaluator cannot find is worse than one
+  that says nothing.
+- **M6.5 note**: `ReviewActions`' tests matched the retry button on a substring, so the new "About
+  retryable" mark collided with them. Tightened to exact names — the assertion should always have
+  been exact.
+- **M6.5 note**: running `prettier --write src/features` reformatted **nine files this milestone
+  never touched** (trailing commas, wrapping) because they had never been run through the repo's
+  own `.prettierrc`. Harmless, but 26 files across the repo still do not match it. Worth one
+  `pnpm format` commit before the M7 diff, so formatting noise does not obscure the final
+  human-reviewed PR.
