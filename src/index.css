@@ -1,1 +1,80 @@
+/*
+ * Design tokens for the archive console, from docs/design/direction.md §4.
+ * Values are computed and contrast-verified by docs/design/palette.mjs - re-run it
+ * before changing any of them. Colour means state and nothing else: there is no brand
+ * accent hue, so the only saturated colours below are the five statuses.
+ */
 @import "tailwindcss";
+
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+@theme {
+  --font-sans: "IBM Plex Sans", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-paper: #f9fbfe;
+  --color-paper-sunk: #f0f4f7;
+  --color-paper-hover: #eef2f6;
+  --color-rule: #d9dfe5;
+  --color-rule-strong: #b7bfc7;
+  --color-field: #87909a;
+  --color-focus: #20709f;
+  --color-ink: #141f2b;
+  --color-ink-muted: #606a74;
+  --color-queued: #606a74;
+  --color-processing: #20709f;
+  --color-completed: #1f6f3d;
+  --color-attention: #8e5d11;
+  --color-failed: #ba2b2e;
+  --color-tint-selected: #e9eff5;
+  --color-tint-attention: #fdf5e7;
+}
+
+/*
+ * Dark is a second palette, not an inversion: chroma drops on the large surfaces and the
+ * lightest text lands at L 0.93 rather than pure white. Redefining the variables flips every
+ * Tailwind utility at once, so no component carries a `dark:` variant.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #101419;
+    --color-paper-sunk: #181e23;
+    --color-paper-hover: #1d242a;
+    --color-rule: #2d343b;
+    --color-rule-strong: #464e57;
+    --color-field: #606a74;
+    --color-focus: #6bbaf0;
+    --color-ink: #e4e8ed;
+    --color-ink-muted: #989fa7;
+    --color-queued: #989fa7;
+    --color-processing: #6bbaf0;
+    --color-completed: #7fcc94;
+    --color-attention: #f4b768;
+    --color-failed: #f28881;
+    --color-tint-selected: #1b232b;
+    --color-tint-attention: #241d10;
+  }
+}
+
+
+@layer base {
+  /* Tabular figures everywhere: a proportional column visibly jitters as a batch drains. */
+  html {
+    font-variant-numeric: tabular-nums;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}

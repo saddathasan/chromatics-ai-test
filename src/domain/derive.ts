@@ -10,6 +10,17 @@ import type { Document, Lane, NormalizedRecord, ReviewStatus } from './types';
 const FLAGGED = new Set(['uncertain', 'missing', 'unreadable']);
 
 /**
+ * Which fields are the reason a document needs attention. Single-sourced with reviewOutcome
+ * so the table's explanation can never disagree with the flag that produced it, and because
+ * a count is not an explanation: "date missing" is actionable where "needs review" is not.
+ */
+export function flaggedFields(record: NormalizedRecord): (keyof NormalizedRecord)[] {
+  return (Object.keys(record) as (keyof NormalizedRecord)[]).filter((key) =>
+    FLAGGED.has(record[key].status)
+  );
+}
+
+/**
  * A document is only as trustworthy as its weakest field, so this is the minimum and not
  * the mean: an average hides one unreadable phone number behind five perfect fields.
  * Undefined when no field carries a confidence at all.
@@ -36,8 +47,7 @@ export function confidenceBand(
  * product exists to prevent. Fields that do not apply to the document type never flag.
  */
 export function reviewOutcome(record: NormalizedRecord): ReviewStatus {
-  const flagged = Object.values(record).some((f) => FLAGGED.has(f.status));
-  return flagged ? 'needs_review' : 'not_required';
+  return flaggedFields(record).length ? 'needs_review' : 'not_required';
 }
 
 /**

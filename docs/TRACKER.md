@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| **Current state** | Milestone 3 merged. Direction brief approved and the HTML prototype built and audited. 77 tests still green. |
+| **Current state** | Milestone 4 merged. The dashboard is real: register, stats strip, URL-bound filters, server-side sort and paging, all four table states. 121 tests. |
 | **Branch** | `feat/doc-processing-prototype` (merge `ms/2`), cut off `main` |
-| **Next action** | Start **Milestone 4** on `ms/4-dashboard`. Build to `docs/design/prototype.html` — it is the reference, not a suggestion. Installs approved and expected: `@fontsource/ibm-plex-sans`, `@fontsource/ibm-plex-mono`, plus the M1-deferred `@testing-library/react`, `@testing-library/jest-dom`, `jsdom` and the Vitest switch to the jsdom environment. |
+| **Next action** | Start **Milestone 5** on `ms/5-detail-drawer`. The `doc` search param is already written by the table's file button; nothing reads it yet. Expect to install a focus-trap primitive (Radix Dialog via shadcn, or `focus-trap-react`) — the first install this project actually needs for behaviour rather than looks. |
 | **Blocking decisions** | None. Task-level choices proceed on the plan's recommendation and are logged. |
 | **Scheduled gates** | Milestone 3 gate cleared 2026-09-04 (all four questions approved). Milestone 7: `feat → main` PR is human-reviewed. |
-| **Budget** | 14–18 h total · ~5 h spent (M1, M2, M3) |
+| **Budget** | 14–18 h total · ~7.5 h spent (M1–M4) |
 
 ## Document map
 
@@ -40,7 +40,7 @@ mandatory), `~/.claude/docs/git-workflow.md` (per-task commits, self-merge on gr
 | 1 | Scaffold + domain | `ms/1-scaffold-domain` | §2, §5 | Milestone 1 | ✅ Merged (`e3d0654`) | merged locally, no remote | `log/2026-09-04-ms1-scaffold-domain.md` |
 | 2 | Mock backend | `ms/2-mock-backend` | §3, §4 | Milestone 2 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms2-mock-backend.md` |
 | 3 | Design direction (davinci) | `ms/3-design-direction` | §6 | Milestone 3 | ✅ Merged · gate cleared | merged locally, no remote | `log/2026-09-04-ms3-design-direction.md` |
-| 4 | Dashboard | `ms/4-dashboard` | §5, §6.1 | Milestone 4 | ⬜ Not started | — | — |
+| 4 | Dashboard | `ms/4-dashboard` | §5, §6.1 | Milestone 4 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms4-dashboard.md` |
 | 5 | Detail drawer | `ms/5-detail-drawer` | §2 (transitions), §6.2 | Milestone 5 | ⬜ Not started | — | — |
 | 6 | Upload | `ms/6-upload` | §5 (upload flow), §6.3 | Milestone 6 | ⬜ Not started | — | — |
 | 7 | Bulk, dev panel, README | `ms/7-bulk-readme` | §3 (bulk, sim), §6.4, §8 | Milestone 7 | ⬜ Not started · **human gate** (`feat → main`) | — | — |
@@ -95,18 +95,19 @@ Tick a task when its commit lands. Tick the Milestone when its PR is merged to `
 - [x] **Milestone 3 merged**
 
 ### Milestone 4 — Dashboard (~3 h) · plan: Milestone 4 · spec: §5, §6.1 · **design: `docs/design/prototype.html`**
-- [ ] Install and wire the M3/M1 deferrals: `@fontsource/ibm-plex-{sans,mono}`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`; Vitest → `jsdom` environment; palette tokens from `docs/design/direction.md` §4 into `src/index.css`; shadcn theme
-- [ ] Tests written first: FilterBar → URL, **lane rendered as glyph + word for all four lanes plus the raw status pair**, empty/error states, polling predicate
-- [ ] `StatsStrip` + `ProgressChart`
-- [ ] `FilterBar` bound to search params
-- [ ] `DocumentsTable` (TanStack Table, manual pagination/sort, badges, confidence)
-- [ ] Loading / empty / error states; polling rules
-- [ ] Throttled live region; keyboard pass
-- [ ] Screenshot self-check against direction brief → PR → self-merge → hub log
-- [ ] **Milestone 4 merged**
+- [x] Installs: `@fontsource/ibm-plex-{sans,mono}`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`. Vitest stays `node`; component files opt into jsdom per file. Tokens in `src/index.css`. No shadcn — see deviations
+- [x] Tests written first: FilterBar → onChange payloads, lane as glyph + word for all four lanes plus the raw status pair, all four table states, polling predicate
+- [x] `StatsStrip` with an inline sparkline (Recharts cut, approved)
+- [x] `FilterBar` bound to search params, debounced 300 ms
+- [x] `DocumentsTable` — plain table, server-side sort and paging, lane column, confidence + band, masked phone
+- [x] Loading / empty ×2 / error states; polling rules in `api/queries.ts`
+- [x] `aria-live` on the feed indicator and the row range; keyboard pass (`th scope`, sort buttons, visible focus)
+- [x] Screenshot self-check against the direction brief → PR → self-merge → hub log
+- [x] **Milestone 4 merged**
 
-### Milestone 5 — Detail drawer (~3 h) · plan: Milestone 5 · spec: §2, §6.2
+### Milestone 5 — Detail drawer (~3 h) · plan: Milestone 5 · spec: §2, §6.2 · **design: `docs/design/prototype.html`**
 - [ ] Tests written first: six field statuses, Retry only if retryable, correct PATCH optimistic, focus return
+- [ ] Reuse `flaggedFields()` from `derive.ts` for the worst-first ordering — it already backs `reviewOutcome` and the table's explanation
 - [ ] Drawer shell on `doc` param, focus trap + return
 - [ ] `FieldList` + `FieldRow` (worst-first, flagged-only)
 - [ ] `ReviewActions` (Confirm / Correct / Reject / Retry) + mutations
@@ -153,6 +154,7 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
 | 2026-09-04 | 1 Scaffold + domain | ~1.5 | 46 tests, typecheck/lint/build green. Deviations logged below. |
 | 2026-09-04 | 2 Mock backend | ~2 | 77 tests. Measured at 100k: generate 71ms, filtered page 6ms, batch stats 5ms. |
 | 2026-09-04 | 3 Design direction | ~1.5 | Brief + prototype + verified palette. No source touched; 77 tests still green. |
+| 2026-09-04 | 4 Dashboard | ~2.5 | 121 tests. Two real bugs found by running the app, not by reading it. |
 
 ## Deviations from the plan (running log)
 
@@ -211,3 +213,37 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
   webfonts, and the Google CDN is ruled out on GDPR grounds) — resolved at M4 by the approved
   self-hosted install. No APCA pass and no colour-blindness simulator pass; the argument for the
   status system is structural rather than measured.
+
+- **M4**: **Recharts, TanStack Table and shadcn were all cut** (approved). The chart is a
+  stroke-only sparkline with no axes, fill or tooltip — one `<polyline>`, and Recharts was already
+  #4 on the cut list. The table is server-side for sort, filter and paging with fixed columns and no
+  reorder, visibility or client sort, so TanStack Table would have wrapped a `.map()`. Every control
+  the dashboard needs is a native element. Radix is expected at M5, where the drawer needs a real
+  focus trap — the first dependency this project needs for behaviour rather than appearance.
+- **M4**: **Count chips filter on status and review, not on lane.** The API has no lane axis, and
+  the needs-review lane spans `review=needs_review` *and* retryable failures, which no single server
+  filter expresses. Chips are All / In flight / Needs review / Failed / Completed; the derived lane
+  stays a per-row reading in the table. Exact lane chips would need lane counts in `batchStats` plus
+  a lane filter on the list endpoint.
+- **M4**: **A flagged row names the field at fault** — "completed · date unreadable" rather than
+  "completed · needs review". Without it, "Needs review" beside a confidence of `0.97 High` reads as
+  a contradiction: the document is flagged for a field that carries no confidence at all, which
+  `documentConfidence` correctly excludes. `flaggedFields()` is now exported from `derive.ts` and
+  backs both `reviewOutcome` and the table, so the two can never disagree.
+- **M4**: **Row selection is not in M4.** Nothing can act on a selected row until M7's
+  `SelectionBar`, and a checkbox that does nothing is worse than no checkbox. M7 adds both together.
+- **M4**: The list endpoint now **attaches the extraction to the returned page**. Type and
+  confidence had no data source otherwise — only `GET /documents/:id` carried one. Generated for 50
+  rows, never the archive; the filtered-page perf assertion still passes.
+- **M4**: Vitest stays in the `node` environment; component tests opt in with a
+  `// @vitest-environment jsdom` docblock. `globals: true` was needed so Testing Library's
+  auto-cleanup finds an `afterEach` — without it the DOM accumulates across tests in a file.
+- **M4 bug fixed**: `overlay.ts` guarded on IndexedDB *existing*, not *working*. A blocked or
+  upgrading connection leaves the open request pending forever, and startup awaits it before
+  rendering, so the app showed a blank page indefinitely. A promise that never settles cannot be
+  caught, so all three calls now race a 2 s timeout. **This closes the M2 open risk** — the MSW
+  browser service-worker path is confirmed working, 50 rows rendering from the live mock.
+- **M4 note on tooling**: Chrome's `--virtual-time-budget` never completes service-worker
+  registration, so the headless `--screenshot` flag cannot photograph this app. Screenshots are taken
+  by driving a real browser over CDP (`WebSocket` is global in Node 24, no dependency). Worth
+  remembering for M5–M7 screenshot checks.

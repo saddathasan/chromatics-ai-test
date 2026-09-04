@@ -20,9 +20,10 @@ const queryClient = new QueryClient({
 
 const rootRoute = createRootRoute({
   component: () => (
-    <div className="min-h-dvh bg-neutral-50 text-neutral-900">
-      <header className="border-b border-neutral-200 bg-white px-6 py-3">
-        <h1 className="text-sm font-semibold">Document Processing</h1>
+    <div className="min-h-dvh">
+      <header className="mx-auto flex max-w-[1360px] flex-wrap items-baseline gap-4 border-b border-rule px-6 pt-6 pb-4">
+        <h1 className="text-lg font-semibold">Archive digitisation</h1>
+        <span className="text-[11px] text-ink-muted">Alo Relief Trust</span>
       </header>
       <Outlet />
     </div>
