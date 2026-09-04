@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| **Current state** | Milestone 4 merged. The dashboard is real: register, stats strip, URL-bound filters, server-side sort and paging, all four table states. 121 tests. |
+| **Current state** | Milestone 5 merged. The drawer works end to end: worst-first fields, inline correction, Confirm/Reject/Retry driven by the transition table, optimistic retry. 148 tests. |
 | **Branch** | `feat/doc-processing-prototype` (merge `ms/2`), cut off `main` |
-| **Next action** | Start **Milestone 5** on `ms/5-detail-drawer`. The `doc` search param is already written by the table's file button; nothing reads it yet. Expect to install a focus-trap primitive (Radix Dialog via shadcn, or `focus-trap-react`) — the first install this project actually needs for behaviour rather than looks. |
+| **Next action** | Start **Milestone 6** on `ms/6-upload`. No installs expected — `<dialog>` covers the upload modal the same way it covered the drawer, and the queue can stay unvirtualized until a measurement says otherwise (TanStack Virtual is the upgrade if it does). |
 | **Blocking decisions** | None. Task-level choices proceed on the plan's recommendation and are logged. |
 | **Scheduled gates** | Milestone 3 gate cleared 2026-09-04 (all four questions approved). Milestone 7: `feat → main` PR is human-reviewed. |
-| **Budget** | 14–18 h total · ~7.5 h spent (M1–M4) |
+| **Budget** | 14–18 h total · ~10 h spent (M1–M5) |
 
 ## Document map
 
@@ -41,7 +41,7 @@ mandatory), `~/.claude/docs/git-workflow.md` (per-task commits, self-merge on gr
 | 2 | Mock backend | `ms/2-mock-backend` | §3, §4 | Milestone 2 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms2-mock-backend.md` |
 | 3 | Design direction (davinci) | `ms/3-design-direction` | §6 | Milestone 3 | ✅ Merged · gate cleared | merged locally, no remote | `log/2026-09-04-ms3-design-direction.md` |
 | 4 | Dashboard | `ms/4-dashboard` | §5, §6.1 | Milestone 4 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms4-dashboard.md` |
-| 5 | Detail drawer | `ms/5-detail-drawer` | §2 (transitions), §6.2 | Milestone 5 | ⬜ Not started | — | — |
+| 5 | Detail drawer | `ms/5-detail-drawer` | §2 (transitions), §6.2 | Milestone 5 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms5-detail-drawer.md` |
 | 6 | Upload | `ms/6-upload` | §5 (upload flow), §6.3 | Milestone 6 | ⬜ Not started | — | — |
 | 7 | Bulk, dev panel, README | `ms/7-bulk-readme` | §3 (bulk, sim), §6.4, §8 | Milestone 7 | ⬜ Not started · **human gate** (`feat → main`) | — | — |
 
@@ -106,14 +106,14 @@ Tick a task when its commit lands. Tick the Milestone when its PR is merged to `
 - [x] **Milestone 4 merged**
 
 ### Milestone 5 — Detail drawer (~3 h) · plan: Milestone 5 · spec: §2, §6.2 · **design: `docs/design/prototype.html`**
-- [ ] Tests written first: six field statuses, Retry only if retryable, correct PATCH optimistic, focus return
-- [ ] Reuse `flaggedFields()` from `derive.ts` for the worst-first ordering — it already backs `reviewOutcome` and the table's explanation
-- [ ] Drawer shell on `doc` param, focus trap + return
-- [ ] `FieldList` + `FieldRow` (worst-first, flagged-only)
-- [ ] `ReviewActions` (Confirm / Correct / Reject / Retry) + mutations
-- [ ] `ProcessingTimeline` + error card
-- [ ] Screenshot self-check → PR → self-merge → hub log
-- [ ] **Milestone 5 merged**
+- [x] Tests written first: six field statuses, Retry only if retryable, optimistic retry, focus return
+- [x] Worst-first ordering by field-status severity (`uncertain` first), not by `flaggedFields()` — that answers "is it flagged", this needs a rank
+- [x] Drawer shell on `doc` param — native `<dialog>`, no library; focus return deferred a tick
+- [x] `FieldList` + `FieldRow` (worst-first, flagged-only toggle, inline correction)
+- [x] `ReviewActions` (Confirm / Correct / Reject / Retry) + `api/mutations.ts`, retry optimistic
+- [x] `ProcessingTimeline` + error card with the retryable explanation
+- [x] Screenshot self-check, plus a live CDP pass over retry, close and focus return
+- [x] **Milestone 5 merged**
 
 ### Milestone 6 — Upload (~3 h) · plan: Milestone 6 · spec: §5 upload flow, §6.3
 - [ ] Tests written first: traversal 100-per-call, validator cases, queue concurrency + retry, chunker
@@ -155,6 +155,7 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
 | 2026-09-04 | 2 Mock backend | ~2 | 77 tests. Measured at 100k: generate 71ms, filtered page 6ms, batch stats 5ms. |
 | 2026-09-04 | 3 Design direction | ~1.5 | Brief + prototype + verified palette. No source touched; 77 tests still green. |
 | 2026-09-04 | 4 Dashboard | ~2.5 | 121 tests. Two real bugs found by running the app, not by reading it. |
+| 2026-09-04 | 5 Detail drawer | ~2.5 | 148 tests. No new dependency — native `<dialog>` covers the focus trap. |
 
 ## Deviations from the plan (running log)
 
@@ -247,3 +248,28 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
   registration, so the headless `--screenshot` flag cannot photograph this app. Screenshots are taken
   by driving a real browser over CDP (`WebSocket` is global in Node 24, no dependency). Worth
   remembering for M5–M7 screenshot checks.
+
+- **M5**: The drawer is a native **`<dialog>` with `showModal()`** — no dialog library, and none is
+  expected for M6 either. The platform maintains the focus trap, the inert background,
+  Escape-to-close and the backdrop; `<form method="dialog">` closes it without a handler. This is
+  what made the M4 note about "the first install this project actually needs" wrong.
+- **M5**: **`can()` in `transitions.ts` decides which buttons exist.** The UI reads its affordances
+  from the same table the server enforces, so it cannot offer a move that would come back as a 409.
+  Building it surfaced a real gap and **spec §2's reject guard is superseded**: reject is now refused
+  when the document is already rejected, not only when confirmed. A reject that changes nothing is
+  not a transition, and `confirm` was already refused the same way.
+- **M5**: Worst-first ordering ranks by **field-status severity with `uncertain` first**, not by
+  `flaggedFields()`. A value that is present and wrong is the failure the product exists to prevent;
+  an unreadable or missing field is at least obviously empty. `flaggedFields()` answers "is this
+  flagged" — a different question from "how bad is it" — so both now exist.
+- **M5**: A `not_applicable` field offers **no correction affordance and no "no value recorded"**
+  line. It is not missing data, and inviting an operator to fill it in is inviting bad data.
+- **M5**: Retry is **optimistic, predicted by running `transition()` itself** rather than by
+  hand-writing the expected next state, so the optimistic row cannot disagree with the server's.
+- **M5 bug fixed**: `generate.ts` produced legible raw text for `unreadable` fields, so the drawer
+  showed a readable "Kurigram" directly under "present, but could not be read".
+- **M5 caution**: **jsdom 30 still has no `HTMLDialogElement.showModal`.** The drawer test shims it,
+  which means the tests assert our own behaviour and never the platform's. Focus return passed in
+  jsdom while being **broken in a real browser** — the browser's focus fixup runs as the dialog
+  leaves the DOM and overwrote our call, fixed by deferring a tick. Anything resting on `<dialog>`
+  semantics must be checked in a real browser; the CDP script is the way.
