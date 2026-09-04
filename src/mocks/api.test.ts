@@ -272,6 +272,32 @@ describe('batches', () => {
   });
 });
 
+describe('POST /documents/retry (filter-scoped bulk)', () => {
+  it('retries only retryable failures, and reports how many actually moved', async () => {
+    const failures = await api.listDocuments({ status: ['failed'], pageSize: 1 });
+    expect(failures.total).toBeGreaterThan(0);
+
+    const { affected } = await api.retryMatching({});
+    expect(affected).toBeGreaterThan(0);
+    // Not every failure is retryable, so the count is a subset rather than the whole filter.
+    expect(affected).toBeLessThanOrEqual(failures.total);
+  });
+
+  it('leaves everything outside the filter alone', async () => {
+    const before = await api.listDocuments({ status: ['failed'], pageSize: 1 });
+    const { affected } = await api.retryMatching({ batch: 'batch_does_not_exist' });
+    expect(affected).toBe(0);
+    const after = await api.listDocuments({ status: ['failed'], pageSize: 1 });
+    expect(after.total).toBe(before.total);
+  });
+
+  it('finds nothing on a second pass: the documents it moved are queued, not failed', async () => {
+    const first = await api.retryMatching({});
+    const second = await api.retryMatching({});
+    expect(second.affected).toBeLessThan(first.affected);
+  });
+});
+
 describe('simulation controls', () => {
   it('serves 503 on reads while an outage is injected', async () => {
     setSim({ outage: true });

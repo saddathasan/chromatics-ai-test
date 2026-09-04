@@ -5,9 +5,12 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { useDocument, useDocumentMutations } from '../../api/mutations';
+import { useBulkRetry, useDocument, useDocumentMutations, useSim } from '../../api/mutations';
 import { PAGE_SIZE, useBatches, useDocuments } from '../../api/queries';
 import { DocumentDrawer } from '../document/DocumentDrawer';
+import { DevPanel } from '../sim/DevPanel';
+import { SelectionBar } from './SelectionBar';
+import { can } from '../../domain/transitions';
 import { count } from '../../lib/format';
 import { DocumentsTable } from './DocumentsTable';
 import { FilterBar } from './FilterBar';
@@ -17,6 +20,9 @@ import type { DocumentSearch } from '../../app/search';
 /** Enough trace to see a trend, short enough that one stall does not flatten the whole line. */
 const MAX_SAMPLES = 24;
 
+/** One shared empty set, so "nothing selected" is a stable reference across renders. */
+const EMPTY: ReadonlySet<string> = new Set();
+
 export function Dashboard() {
   const search = useSearch({ from: '/' });
   const navigate = useNavigate({ from: '/' });
@@ -24,6 +30,13 @@ export function Dashboard() {
   const documents = useDocuments(search, batches.data);
   const opened = useDocument(search.doc);
   const actions = useDocumentMutations(search.doc);
+  const bulk = useBulkRetry();
+  const sim = useSim();
+  const [selection, setSelection] = useState<{ view: string; ids: ReadonlySet<string> }>({
+    view: '',
+    ids: EMPTY,
+  });
+  const [bulkResult, setBulkResult] = useState<string | undefined>();
 
   const patch = useCallback(
     (next: Partial<DocumentSearch>) => {
@@ -48,6 +61,44 @@ export function Dashboard() {
       setSamples((s) => [...s, completed - last].slice(-MAX_SAMPLES));
     }
   }, [batches.dataUpdatedAt, batches.data, completed]);
+
+  const rows = documents.data?.items ?? [];
+
+  /**
+   * Selection is page-scoped and drops the moment the view changes. Carrying ids across pages
+   * would mean holding a set the operator can no longer see, and "retry every matching failure"
+   * already covers the case that would need.
+   *
+   * Derived during render rather than reset from an effect: the stale set is simply never read,
+   * so there is no second render to cascade from.
+   */
+  const view = JSON.stringify(search);
+  const selected = selection.view === view ? selection.ids : EMPTY;
+  const setSelected = (ids: ReadonlySet<string>) => setSelection({ view, ids });
+
+  const toggle = (id: string, on: boolean) => {
+    const next = new Set(selected);
+    if (on) next.add(id);
+    else next.delete(id);
+    setSelected(next);
+  };
+
+  const toggleAll = (on: boolean) => setSelected(on ? new Set(rows.map((doc) => doc.id)) : EMPTY);
+
+  // Only retryable rows will move, so the button counts those rather than the selection.
+  const retryableIds = rows
+    .filter((doc) => selected.has(doc.id) && can(doc, 'retry'))
+    .map((d) => d.id);
+
+  const runBulk = async (run: Promise<{ affected: number }>, scope: string) => {
+    const { affected } = await run;
+    setBulkResult(
+      affected === 0
+        ? `Nothing in ${scope} could be retried.`
+        : `Retried ${count(affected)} ${affected === 1 ? 'document' : 'documents'} in ${scope}.`,
+    );
+    setSelected(EMPTY);
+  };
 
   const clearFilters = useCallback(
     () =>
@@ -108,12 +159,53 @@ export function Dashboard() {
 
       <FilterBar search={search} batches={batches.data ?? []} onChange={patch} />
 
+      {selected.size > 0 ? (
+        <SelectionBar
+          selected={selected.size}
+          retryable={retryableIds.length}
+          hasFilters={hasFilters}
+          pending={bulk.pending}
+          onRetrySelected={() =>
+            void runBulk(bulk.selected.mutateAsync(retryableIds), 'the selected rows')
+          }
+          onRetryMatching={() =>
+            void runBulk(
+              bulk.matching.mutateAsync({
+                q: search.q,
+                status: search.status,
+                review: search.review,
+                type: search.type,
+                batch: search.batch,
+              }),
+              hasFilters ? 'this filter' : 'the archive',
+            )
+          }
+          onClear={() => setSelected(EMPTY)}
+        />
+      ) : null}
+
+      {bulkResult ? (
+        <p role="status" className="border-b border-rule px-3 py-2 text-[13px]">
+          {bulkResult}{' '}
+          <button
+            type="button"
+            className="underline underline-offset-[3px]"
+            onClick={() => setBulkResult(undefined)}
+          >
+            Dismiss
+          </button>
+        </p>
+      ) : null}
+
       <DocumentsTable
-        docs={documents.data?.items ?? []}
+        docs={rows}
         isPending={documents.isPending}
         error={documents.error}
         hasFilters={hasFilters}
         sort={search.sort}
+        selected={selected}
+        onToggle={toggle}
+        onToggleAll={toggleAll}
         onSort={(sort) => patch({ sort, page: 1 })}
         onOpen={(doc) => patch({ doc })}
         onRetry={() => void documents.refetch()}
@@ -135,7 +227,7 @@ export function Dashboard() {
         />
       ) : null}
 
-      <nav className="flex items-center gap-4 py-3 pb-12 text-ink-muted" aria-label="Pagination">
+      <nav className="flex items-center gap-4 py-3 text-ink-muted" aria-label="Pagination">
         <span aria-live="polite">
           {total === 0
             ? 'No documents'
@@ -159,6 +251,14 @@ export function Dashboard() {
           Next
         </button>
       </nav>
+
+      {sim.sim ? (
+        <DevPanel
+          sim={sim.sim}
+          onChange={(next) => sim.set.mutate(next)}
+          onReset={() => sim.reset.mutate()}
+        />
+      ) : null}
     </main>
   );
 }

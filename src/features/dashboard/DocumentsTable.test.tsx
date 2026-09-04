@@ -24,6 +24,9 @@ const props = {
   error: null,
   hasFilters: false,
   sort: undefined,
+  selected: new Set<string>(),
+  onToggle: vi.fn(),
+  onToggleAll: vi.fn(),
   onSort: vi.fn(),
   onOpen: vi.fn(),
   onRetry: vi.fn(),
@@ -217,5 +220,27 @@ describe('DocumentsTable rows', () => {
     expect(screen.getByText('Rahima Khatun')).toBeInTheDocument();
     expect(screen.queryByText('+8801712345402')).not.toBeInTheDocument();
     expect(screen.getByText(/•/)).toBeInTheDocument();
+  });
+});
+
+describe('row selection', () => {
+  it('reports the row a checkbox belongs to, not just that one was ticked', () => {
+    const onToggle = vi.fn();
+    render(<DocumentsTable {...props} onToggle={onToggle} />);
+    fireEvent.click(screen.getByRole('checkbox', { name: /select intake_scan_88\.pdf/i }));
+    expect(onToggle).toHaveBeenCalledWith('doc_1', true);
+  });
+
+  it('ticks the header box only when every row on the page is already selected', () => {
+    const header = () => screen.getByRole('checkbox', { name: /every document on this page/i });
+    const { rerender } = render(<DocumentsTable {...props} />);
+    expect(header()).not.toBeChecked();
+    rerender(<DocumentsTable {...props} selected={new Set(['doc_1'])} />);
+    expect(header()).toBeChecked();
+  });
+
+  it('leaves the header box clear on an empty page rather than claiming all of nothing', () => {
+    render(<DocumentsTable {...props} docs={[]} hasFilters />);
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 });
