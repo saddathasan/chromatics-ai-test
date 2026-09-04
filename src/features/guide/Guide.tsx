@@ -80,7 +80,7 @@ export function Guide() {
         </ol>
       </nav>
 
-      <div className="min-w-0 flex-1 pt-8">
+      <div className="min-w-0 max-w-[78ch] flex-1 pt-8">
         <h1 className="text-3xl font-semibold">How this works</h1>
         <p className={`${P} text-ink-muted`}>
           A guide to the archive digitisation dashboard — what is on screen, how to work it, and the
