@@ -98,6 +98,15 @@ describe('GET /documents', () => {
     );
     expect(totals.reduce((a, b) => a + b, 0)).toBe(5_000);
   });
+
+  it('attaches the extraction to listed rows so the table can show type and confidence', async () => {
+    const completed = await api.listDocuments({ status: ['completed'], pageSize: 5 });
+    expect(completed.items.every((d) => d.extraction?.documentType.value)).toBe(true);
+
+    // Nothing has been read off an unprocessed document, so there is nothing to attach.
+    const queued = await api.listDocuments({ status: ['queued'], pageSize: 5 });
+    expect(queued.items.every((d) => d.extraction === undefined)).toBe(true);
+  });
 });
 
 describe('GET /documents/:id', () => {

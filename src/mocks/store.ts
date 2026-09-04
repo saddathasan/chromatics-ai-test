@@ -175,7 +175,13 @@ export function list(query: ListQuery) {
   sortRows(matched, query.sort);
   const start = (page - 1) * pageSize;
   return {
-    items: matched.slice(start, start + pageSize).map(materialize),
+    // Extraction is attached to the returned page only - the table needs the document type and
+    // the weakest field's confidence, and generating it for 50 rows costs far less than the
+    // scan that produced them. The archive is never materialized.
+    items: matched.slice(start, start + pageSize).map((row) => {
+      const doc = materialize(row);
+      return { ...doc, extraction: extractionFor(doc.id, doc.status) };
+    }),
     total: matched.length,
     page,
     pageSize,
