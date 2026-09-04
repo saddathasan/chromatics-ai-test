@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| **Current state** | Milestone 5 merged. The drawer works end to end: worst-first fields, inline correction, Confirm/Reject/Retry driven by the transition table, optimistic retry. 148 tests. |
+| **Current state** | Milestone 6 merged. Bulk upload works end to end against a real browser: 600 files selected, validated, transferred four at a time, registered in chunks of 500, and processing on the dashboard. Cancel and failed-only both verified. 168 tests. |
 | **Branch** | `feat/doc-processing-prototype` (merge `ms/2`), cut off `main` |
-| **Next action** | Start **Milestone 6** on `ms/6-upload`. No installs expected — `<dialog>` covers the upload modal the same way it covered the drawer, and the queue can stay unvirtualized until a measurement says otherwise (TanStack Virtual is the upgrade if it does). |
+| **Next action** | Start **Milestone 7** on `ms/7-bulk-readme`. No installs expected. The screenshots for the README come from the CDP script (see the M4 tooling note); M6's run already covers the upload flow. This is the human gate: the `feat → main` PR is opened and left for review. |
 | **Blocking decisions** | None. Task-level choices proceed on the plan's recommendation and are logged. |
 | **Scheduled gates** | Milestone 3 gate cleared 2026-09-04 (all four questions approved). Milestone 7: `feat → main` PR is human-reviewed. |
-| **Budget** | 14–18 h total · ~10 h spent (M1–M5) |
+| **Budget** | 14–18 h total · ~12.5 h spent (M1–M6) |
 
 ## Document map
 
@@ -42,7 +42,7 @@ mandatory), `~/.claude/docs/git-workflow.md` (per-task commits, self-merge on gr
 | 3 | Design direction (davinci) | `ms/3-design-direction` | §6 | Milestone 3 | ✅ Merged · gate cleared | merged locally, no remote | `log/2026-09-04-ms3-design-direction.md` |
 | 4 | Dashboard | `ms/4-dashboard` | §5, §6.1 | Milestone 4 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms4-dashboard.md` |
 | 5 | Detail drawer | `ms/5-detail-drawer` | §2 (transitions), §6.2 | Milestone 5 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms5-detail-drawer.md` |
-| 6 | Upload | `ms/6-upload` | §5 (upload flow), §6.3 | Milestone 6 | ⬜ Not started | — | — |
+| 6 | Upload | `ms/6-upload` | §5 (upload flow), §6.3 | Milestone 6 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms6-upload.md` |
 | 7 | Bulk, dev panel, README | `ms/7-bulk-readme` | §3 (bulk, sim), §6.4, §8 | Milestone 7 | ⬜ Not started · **human gate** (`feat → main`) | — | — |
 
 Status legend: ⬜ Not started · 🔶 In progress · 🔴 Blocked · ✅ Merged to `feat`.
@@ -116,14 +116,14 @@ Tick a task when its commit lands. Tick the Milestone when its PR is merged to `
 - [x] **Milestone 5 merged**
 
 ### Milestone 6 — Upload (~3 h) · plan: Milestone 6 · spec: §5 upload flow, §6.3
-- [ ] Tests written first: traversal 100-per-call, validator cases, queue concurrency + retry, chunker
-- [ ] `useFileSelection` (input, folder, drop traversal, chunked enumeration)
-- [ ] `validate.ts` + summary UI
-- [ ] `useUploadQueue` (concurrency 4, backoff, throttled aggregate, chunked POST)
-- [ ] `UploadDialog` + virtualized `QueueList`
-- [ ] Transition banner + dashboard invalidation
-- [ ] Screenshot self-check → PR → self-merge → hub log
-- [ ] **Milestone 6 merged**
+- [x] Tests written first: traversal 100-per-call, validator cases, queue concurrency + retry, chunker
+- [x] `useFileSelection` (input, folder, drop traversal) — no explicit chunker, see deviations
+- [x] `validate.ts` + summary UI (grouped by reason, in words)
+- [x] `useUploadQueue` (concurrency 4, backoff, throttled aggregate, chunked POST)
+- [x] `UploadDialog` + windowed `QueueList` (no virtualizer installed — see deviations)
+- [x] Completion panel with "View batch" + per-chunk dashboard invalidation
+- [x] Live CDP pass over select → start → cancel → view batch; two bugs fixed from it
+- [x] **Milestone 6 merged**
 
 ### Milestone 7 — Bulk, dev panel, README (~2 h) · plan: Milestone 7 · spec: §3, §6.4, §8
 - [ ] Tests written first: SelectionBar modes, bulk invalidation, DevPanel PATCH
@@ -156,6 +156,7 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
 | 2026-09-04 | 3 Design direction | ~1.5 | Brief + prototype + verified palette. No source touched; 77 tests still green. |
 | 2026-09-04 | 4 Dashboard | ~2.5 | 121 tests. Two real bugs found by running the app, not by reading it. |
 | 2026-09-04 | 5 Detail drawer | ~2.5 | 148 tests. No new dependency — native `<dialog>` covers the focus trap. |
+| 2026-09-04 | 6 Upload | ~2.5 | 168 tests. 600 real files driven through a real browser; two bugs found that way. |
 
 ## Deviations from the plan (running log)
 
@@ -273,3 +274,27 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
   jsdom while being **broken in a real browser** — the browser's focus fixup runs as the dialog
   leaves the DOM and overwrote our call, fixed by deferring a tick. Anything resting on `<dialog>`
   semantics must be checked in a real browser; the CDP script is the way.
+
+- **M6**: **No virtualizer installed.** TanStack Virtual earns its place with variable row
+  heights; the queue's rows are a fixed 26px, which makes the window a subtraction rather than a
+  measurement — twenty lines in `QueueList.tsx`. 10,000 items render under thirty rows, asserted.
+  `ponytail:` comment names the ceiling: a variable-height queue needs a real virtualizer.
+- **M6**: **No explicit chunker for enumeration.** Every `readEntries` call and every
+  `entry.file()` is awaited, so the traversal already yields to the event loop between batches —
+  there is no long synchronous stretch for `scheduler.yield` to break up. Progress is reported
+  every 100 files so the dialog counts up while a large folder is read.
+- **M6**: The transition banner is the **dialog's own completion panel**, not a page-level banner.
+  It states the batch, the failures and (after a cancel) what was never sent, and its "View batch"
+  navigates to `/?batch=…`. A second surface saying the same thing would have to be dismissed too.
+- **M6**: The engine (`queue.ts`) is **transport-free and React-free** — the caller supplies `send`
+  and `flush`. Concurrency, the single retry and the 500-file chunking are therefore tested with
+  plain functions, no DOM and no server, which is why those tests run in the `node` environment.
+- **M6 bug fixed**: `store.addDocuments` built the document id out of the client's key, so the
+  archive's identifier column read `doc_up_batch_1_x_kurigram/intake.pdf:112:1788525508618` — a
+  path, a size and a **file modification time from the operator's disk**, leaked into a document id
+  and wide enough to collapse the rest of the table. The server mints `doc_up_<n>` now and keeps
+  the client key only for idempotency. Found by running an upload, not by reading the code.
+- **M6 bug fixed**: after a cancel the dialog said only "93 documents are now processing", which
+  reads as if the other 206 went through. It names all three outcomes now.
+- **M6 note**: uploaded documents live in `extraBase`, which is **not persisted** — a reload loses
+  them, exactly as it loses an in-flight queue. Both belong in the README's known limitations (M7).
