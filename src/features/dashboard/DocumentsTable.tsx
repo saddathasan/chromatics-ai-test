@@ -21,6 +21,10 @@ type Props = {
   /** Drives which empty state to show: a filtered-to-nothing view is fixable, a fresh one is not. */
   hasFilters: boolean;
   sort: SortKey | undefined;
+  /** Selected ids. Selection is deliberately page-scoped - see onToggle. */
+  selected: ReadonlySet<string>;
+  onToggle: (id: string, on: boolean) => void;
+  onToggleAll: (on: boolean) => void;
   onSort: (sort: SortKey) => void;
   onOpen: (id: string) => void;
   onRetry: () => void;
@@ -105,6 +109,9 @@ export function DocumentsTable({
   error,
   hasFilters,
   sort,
+  selected,
+  onToggle,
+  onToggleAll,
   onSort,
   onOpen,
   onRetry,
@@ -165,6 +172,14 @@ export function DocumentsTable({
             <th scope="col" className="w-[2.5ch] px-0">
               <span className="sr-only">Margin mark</span>
             </th>
+            <th scope="col" className="w-9 px-2">
+              <input
+                type="checkbox"
+                aria-label="Select every document on this page"
+                checked={docs.length > 0 && docs.every((d) => selected.has(d.id))}
+                onChange={(event) => onToggleAll(event.target.checked)}
+              />
+            </th>
             <th scope="col" className={TH}>
               Identifier
             </th>
@@ -195,8 +210,21 @@ export function DocumentsTable({
             const score = doc.extraction ? documentConfidence(doc.extraction) : undefined;
             const band = confidenceBand(score);
             return (
-              <tr key={doc.id} className="border-b border-rule hover:bg-paper-hover">
+              <tr
+                key={doc.id}
+                className={`border-b border-rule hover:bg-paper-hover ${
+                  selected.has(doc.id) ? 'bg-tint-selected' : ''
+                }`}
+              >
                 <MarginMark lane={bucket} />
+                <td className="px-2 align-top">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select ${doc.fileName}`}
+                    checked={selected.has(doc.id)}
+                    onChange={(event) => onToggle(doc.id, event.target.checked)}
+                  />
+                </td>
                 <td className={`${TD} font-mono text-[11px] text-ink-muted`}>{doc.id}</td>
                 <td className={TD}>
                   <button

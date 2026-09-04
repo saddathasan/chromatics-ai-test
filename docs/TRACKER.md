@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| **Current state** | Milestone 6.5 merged. Hover tooltips on the fifteen things that needed explaining, and a full guide at `/guide` linked from the app bar — orientation, four walkthroughs, complete reference, the simulation, and the decisions behind the build. 181 tests. |
+| **Current state** | Milestone 7 built on `ms/7-bulk-readme`: row selection + filter-scoped bulk retry, the dev panel, guide walkthroughs 5–6, the CDP driver committed under `scripts/`, and the README with all fourteen spec §8 sections and seven screenshots. 198 tests. Verification pass green. |
 | **Branch** | `feat/doc-processing-prototype` (merge `ms/2`), cut off `main` |
-| **Next action** | Start **Milestone 7** on `ms/7-bulk-readme`. No installs expected. Two additions from the M6.5 decision: the guide needs its walkthroughs 5 and 6 written **with** the bulk-retry and dev-panel features, and the CDP script should be committed under `scripts/` rather than rewritten a fifth time. This is the human gate: the `feat → main` PR is opened and left for review. |
+| **Next action** | **Human gate.** `ms/7` merges to `feat`, and the `feat → main` PR is Saddat's to open — the remote (`github.com/saddathasan/chromatics-ai-test`) is empty, so nothing has ever been pushed and `main` does not exist yet. Pushing is his call, not the agent's. |
 | **Blocking decisions** | None. Task-level choices proceed on the plan's recommendation and are logged. |
 | **Scheduled gates** | Milestone 3 gate cleared 2026-09-04 (all four questions approved). Milestone 7: `feat → main` PR is human-reviewed. |
-| **Budget** | 14–18 h total · ~15 h spent (M1–M6.5) |
+| **Budget** | 14–18 h total · ~17 h spent (M1–M7) |
 
 ## Document map
 
@@ -44,7 +44,7 @@ mandatory), `~/.claude/docs/git-workflow.md` (per-task commits, self-merge on gr
 | 5 | Detail drawer | `ms/5-detail-drawer` | §2 (transitions), §6.2 | Milestone 5 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms5-detail-drawer.md` |
 | 6 | Upload | `ms/6-upload` | §5 (upload flow), §6.3 | Milestone 6 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms6-upload.md` |
 | 6.5 | Tooltips + guide | `ms/6.5-guide` | — (added after M6; see deviations) | — | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms6.5-guide.md` |
-| 7 | Bulk, dev panel, README | `ms/7-bulk-readme` | §3 (bulk, sim), §6.4, §8 | Milestone 7 | ⬜ Not started · **human gate** (`feat → main`) | — | — |
+| 7 | Bulk, dev panel, README | `ms/7-bulk-readme` | §3 (bulk, sim), §6.4, §8 | Milestone 7 | ✅ Merged to `feat` · **awaiting human gate** | `feat → main` not opened; remote is empty | `log/2026-09-04-ms7-bulk-readme.md` |
 
 Status legend: ⬜ Not started · 🔶 In progress · 🔴 Blocked · ✅ Merged to `feat`.
 
@@ -136,15 +136,15 @@ Tick a task when its commit lands. Tick the Milestone when its PR is merged to `
 - [x] **Milestone 6.5 merged**
 
 ### Milestone 7 — Bulk, dev panel, README (~2 h) · plan: Milestone 7 · spec: §3, §6.4, §8
-- [ ] Tests written first: SelectionBar modes, bulk invalidation, DevPanel PATCH
-- [ ] `SelectionBar` + filter-scoped bulk retry
-- [ ] `DevPanel`
-- [ ] Guide walkthroughs 5 (retry in bulk) and 6 (force any state) — written with the features, per the M6.5 decision
-- [ ] Commit the CDP screenshot script under `scripts/`
-- [ ] README per spec §8 (assumptions from gap-analysis §7 + original §27), `docs/screenshots/`
-- [ ] `verification-before-completion` pass
-- [ ] PR `feat → main` opened with precise summary, left for human review → hub README + log
-- [ ] **Milestone 7 merged to feat; Feature PR open**
+- [x] Tests written first: SelectionBar modes, bulk invalidation, DevPanel PATCH
+- [x] `SelectionBar` + filter-scoped bulk retry, plus the row selection M4 deferred
+- [x] `DevPanel` (native `<details>`)
+- [x] Guide walkthroughs 5 (retry in bulk) and 6 (force any state)
+- [x] `scripts/drive.mjs` (CDP driver) + `scripts/screenshots.mjs`
+- [x] README per spec §8 (17 assumptions), `docs/screenshots/` — 8 images
+- [x] `verification-before-completion` pass — 198 tests, typecheck, oxlint, build, prettier all green
+- [x] **Milestone 7 merged to feat**
+- [ ] **PR `feat → main`** — blocked on a human: the remote is empty and nothing has been pushed
 
 ## Cut list (apply in order only if budget runs out)
 1. Dev panel (M7) · 2. "Retry all matching" (M7) · 3. Folder traversal, keep multi-file input (M6) · 4. Recharts chart (M4).
@@ -170,6 +170,7 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
 | 2026-09-04 | 5 Detail drawer | ~2.5 | 148 tests. No new dependency — native `<dialog>` covers the focus trap. |
 | 2026-09-04 | 6 Upload | ~2.5 | 168 tests. 600 real files driven through a real browser; two bugs found that way. |
 | 2026-09-04 | 6.5 Tooltips + guide | ~2.5 | 181 tests. Added after M6: the screen was not self-explaining. No new dependency. |
+| 2026-09-04 | 7 Bulk, dev panel, README | ~2 | 198 tests. Dev panel kept — the budget held. Nothing from the cut list was used. |
 
 ## Deviations from the plan (running log)
 
@@ -350,3 +351,29 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
   own `.prettierrc`. Harmless, but 26 files across the repo still do not match it. Worth one
   `pnpm format` commit before the M7 diff, so formatting noise does not obscure the final
   human-reviewed PR.
+
+- **M7**: **`pnpm format` was a trap and is now fixed.** The script is `prettier --write .` with no
+  ignore file, so running it rewrote `pnpm-lock.yaml`, the MSW worker that msw owns and regenerates,
+  the M3 design prototype and every markdown doc — 3,196 lines to format 133 lines of source.
+  Added `.prettierignore` and did the reformat as its own commit, so this milestone and the final
+  human-reviewed PR carry no formatting noise.
+- **M7**: **The bulk bar promises no count for the filter-scoped retry**, superseding the plan's
+  "Retry all M matching current filter". The endpoint moves only retryable failures, and the archive
+  cannot count those within an arbitrary filter without materialising every match — so `M` would
+  have been a number the button could not honour. It reports the server's `affected` afterwards
+  instead. The *selected* count is exact, because those rows are already on screen: six selected can
+  read "Retry 2 selected".
+- **M7**: **Selection is page-scoped and derived during render**, not reset from an effect. The
+  stored set carries the view key it was made under and is simply not read once the view changes,
+  so there is no second render to cascade from. Carrying ids across pages would mean holding a
+  selection the operator can no longer see; the filter-scoped action covers that need properly.
+- **M7**: **Retrying selected rows is N requests, not one.** The API has no "retry these ids" route,
+  and inventing one in the mock would be a contract no real backend agreed to. `Promise.allSettled`,
+  and the count reports what actually succeeded.
+- **M7**: The **dev panel survived the cut list** — the budget held at ~17 h of 14–18 h. Nothing on
+  the cut list was used at any point in the build.
+- **M7**: `scripts/drive.mjs` is the CDP driver, **committed at last** after being rewritten from
+  scratch in M4, M5, M6 and M6.5. `scripts/screenshots.mjs` produces the README images from it.
+- **M7 note**: the remote `github.com/saddathasan/chromatics-ai-test` **has no branches** — nothing
+  has ever been pushed, and `main` does not exist locally or remotely. The final `feat → main` PR
+  therefore cannot be opened by the agent: it needs a first push, which is Saddat's call.

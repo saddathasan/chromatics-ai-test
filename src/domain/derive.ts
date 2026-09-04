@@ -16,7 +16,7 @@ const FLAGGED = new Set(['uncertain', 'missing', 'unreadable']);
  */
 export function flaggedFields(record: NormalizedRecord): (keyof NormalizedRecord)[] {
   return (Object.keys(record) as (keyof NormalizedRecord)[]).filter((key) =>
-    FLAGGED.has(record[key].status)
+    FLAGGED.has(record[key].status),
   );
 }
 
@@ -34,7 +34,7 @@ export function documentConfidence(record: NormalizedRecord): number | undefined
 
 /** Confidence bands. The thresholds are a product assumption, documented in the README. */
 export function confidenceBand(
-  confidence: number | undefined
+  confidence: number | undefined,
 ): 'high' | 'review_recommended' | 'review_required' | undefined {
   if (typeof confidence !== 'number') return undefined;
   if (confidence >= CONFIDENCE.high) return 'high';

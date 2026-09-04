@@ -38,10 +38,10 @@ describe('start', () => {
 
   it('rejects start from any other status', () => {
     expect(() => transition(doc({ status: 'processing' }), { type: 'start', at })).toThrow(
-      IllegalTransition
+      IllegalTransition,
     );
     expect(() => transition(doc({ status: 'completed' }), { type: 'start', at })).toThrow(
-      IllegalTransition
+      IllegalTransition,
     );
   });
 });
@@ -73,7 +73,12 @@ describe('complete', () => {
       extraction: {
         documentType: { status: 'extracted', value: 'medical_intake', confidence: 0.98 },
         personName: { status: 'extracted', value: 'Karim Uddin', confidence: 0.96 },
-        phone: { status: 'uncertain', value: '+8801711111111', raw: '017l1111111', confidence: 0.62 },
+        phone: {
+          status: 'uncertain',
+          value: '+8801711111111',
+          raw: '017l1111111',
+          confidence: 0.62,
+        },
         location: { status: 'extracted', value: 'Khulna', confidence: 0.94 },
         programName: { status: 'missing' },
         date: { status: 'extracted', value: '2026-03-02', confidence: 0.92 },
@@ -84,7 +89,7 @@ describe('complete', () => {
 
   it('rejects complete unless processing', () => {
     expect(() =>
-      transition(doc({ status: 'queued' }), { type: 'complete', at, extraction: undefined })
+      transition(doc({ status: 'queued' }), { type: 'complete', at, extraction: undefined }),
     ).toThrow(IllegalTransition);
   });
 });
@@ -98,9 +103,9 @@ describe('fail', () => {
   });
 
   it('rejects fail unless processing', () => {
-    expect(() => transition(doc({ status: 'failed' }), { type: 'fail', at, error: timeout })).toThrow(
-      IllegalTransition
-    );
+    expect(() =>
+      transition(doc({ status: 'failed' }), { type: 'fail', at, error: timeout }),
+    ).toThrow(IllegalTransition);
   });
 });
 
@@ -118,7 +123,7 @@ describe('retry', () => {
 
   it('refuses to retry a non-retryable error', () => {
     expect(() =>
-      transition(doc({ status: 'failed', error: unsupported }), { type: 'retry', at })
+      transition(doc({ status: 'failed', error: unsupported }), { type: 'retry', at }),
     ).toThrow(IllegalTransition);
   });
 
@@ -127,13 +132,13 @@ describe('retry', () => {
       transition(doc({ status: 'failed', error: timeout, reviewStatus: 'rejected' }), {
         type: 'retry',
         at,
-      })
+      }),
     ).toThrow(IllegalTransition);
   });
 
   it('refuses to retry anything not failed', () => {
     expect(() => transition(doc({ status: 'completed' }), { type: 'retry', at })).toThrow(
-      IllegalTransition
+      IllegalTransition,
     );
   });
 });
@@ -149,7 +154,10 @@ describe('confirm', () => {
 
   it('refuses to confirm a document that needs no review', () => {
     expect(() =>
-      transition(doc({ status: 'completed', reviewStatus: 'not_required' }), { type: 'confirm', at })
+      transition(doc({ status: 'completed', reviewStatus: 'not_required' }), {
+        type: 'confirm',
+        at,
+      }),
     ).toThrow(IllegalTransition);
   });
 });
@@ -200,7 +208,7 @@ describe('correct', () => {
         at,
         field: 'phone',
         value: 'x',
-      })
+      }),
     ).toThrow(IllegalTransition);
   });
 });
@@ -221,19 +229,19 @@ describe('reject', () => {
 
   it('refuses to reject an already confirmed document', () => {
     expect(() =>
-      transition(doc({ status: 'completed', reviewStatus: 'confirmed' }), { type: 'reject', at })
+      transition(doc({ status: 'completed', reviewStatus: 'confirmed' }), { type: 'reject', at }),
     ).toThrow(IllegalTransition);
   });
 
   it('refuses to reject a document that is already rejected', () => {
     expect(() =>
-      transition(doc({ status: 'completed', reviewStatus: 'rejected' }), { type: 'reject', at })
+      transition(doc({ status: 'completed', reviewStatus: 'rejected' }), { type: 'reject', at }),
     ).toThrow(IllegalTransition);
   });
 
   it('refuses to reject a document still in flight', () => {
     expect(() => transition(doc({ status: 'processing' }), { type: 'reject', at })).toThrow(
-      IllegalTransition
+      IllegalTransition,
     );
   });
 });
@@ -294,8 +302,8 @@ describe('can', () => {
     expect(
       can(
         { ...failed, error: { code: 'UNSUPPORTED_FORMAT', message: 'nope', retryable: false } },
-        'retry'
-      )
+        'retry',
+      ),
     ).toBe(false);
   });
 });

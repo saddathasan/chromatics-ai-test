@@ -109,21 +109,21 @@ export const handlers = [
   http.post('*/api/documents/:id/retry', async ({ params }) => {
     await delay(jitter());
     return guarded(() =>
-      store.mutate(String(params.id), (doc) => transition(doc, { type: 'retry', at: at() }))
+      store.mutate(String(params.id), (doc) => transition(doc, { type: 'retry', at: at() })),
     );
   }),
 
   http.post('*/api/documents/:id/confirm', async ({ params }) => {
     await delay(jitter());
     return guarded(() =>
-      store.mutate(String(params.id), (doc) => transition(doc, { type: 'confirm', at: at() }))
+      store.mutate(String(params.id), (doc) => transition(doc, { type: 'confirm', at: at() })),
     );
   }),
 
   http.post('*/api/documents/:id/reject', async ({ params }) => {
     await delay(jitter());
     return guarded(() =>
-      store.mutate(String(params.id), (doc) => transition(doc, { type: 'reject', at: at() }))
+      store.mutate(String(params.id), (doc) => transition(doc, { type: 'reject', at: at() })),
     );
   }),
 
@@ -137,8 +137,8 @@ export const handlers = [
           at: at(),
           field: String(params.field) as keyof NormalizedRecord,
           value: body.value,
-        })
-      )
+        }),
+      ),
     );
   }),
 

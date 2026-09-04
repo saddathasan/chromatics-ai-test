@@ -21,7 +21,7 @@ beforeEach(async () => {
 describe('toQuery', () => {
   it('repeats a key per value and drops empties', () => {
     expect(toQuery({ status: ['failed', 'queued'], q: '', page: 2 })).toBe(
-      '?status=failed&status=queued&page=2'
+      '?status=failed&status=queued&page=2',
     );
   });
 });
@@ -94,7 +94,7 @@ describe('GET /documents', () => {
       (['queued', 'processing', 'completed', 'failed'] as const).map(async (status) => {
         const page = await api.listDocuments({ status: [status], pageSize: 1 });
         return page.total;
-      })
+      }),
     );
     expect(totals.reduce((a, b) => a + b, 0)).toBe(5_000);
   });
@@ -146,7 +146,11 @@ describe('review actions', () => {
   });
 
   it('409s when confirming a document that needs no review', async () => {
-    const clean = await api.listDocuments({ review: ['not_required'], status: ['completed'], pageSize: 1 });
+    const clean = await api.listDocuments({
+      review: ['not_required'],
+      status: ['completed'],
+      pageSize: 1,
+    });
     await expect(api.confirm(clean.items[0].id)).rejects.toMatchObject({ status: 409 });
   });
 
@@ -255,11 +259,42 @@ describe('batches', () => {
     // A client key is a path, a size and a file modification time - an upload-side identity
     // that has no business appearing in the identifier column of an archive.
     await api.addDocuments(batch.id, [
-      { clientKey: 'kurigram/intake.pdf:112:1788525508618', name: 'intake.pdf', size: 112, mimeType: 'application/pdf' },
+      {
+        clientKey: 'kurigram/intake.pdf:112:1788525508618',
+        name: 'intake.pdf',
+        size: 112,
+        mimeType: 'application/pdf',
+      },
     ]);
     const page = await api.listDocuments({ batch: batch.id });
     expect(page.items[0].id).not.toContain('1788525508618');
     expect(page.items[0].fileName).toBe('intake.pdf');
+  });
+});
+
+describe('POST /documents/retry (filter-scoped bulk)', () => {
+  it('retries only retryable failures, and reports how many actually moved', async () => {
+    const failures = await api.listDocuments({ status: ['failed'], pageSize: 1 });
+    expect(failures.total).toBeGreaterThan(0);
+
+    const { affected } = await api.retryMatching({});
+    expect(affected).toBeGreaterThan(0);
+    // Not every failure is retryable, so the count is a subset rather than the whole filter.
+    expect(affected).toBeLessThanOrEqual(failures.total);
+  });
+
+  it('leaves everything outside the filter alone', async () => {
+    const before = await api.listDocuments({ status: ['failed'], pageSize: 1 });
+    const { affected } = await api.retryMatching({ batch: 'batch_does_not_exist' });
+    expect(affected).toBe(0);
+    const after = await api.listDocuments({ status: ['failed'], pageSize: 1 });
+    expect(after.total).toBe(before.total);
+  });
+
+  it('finds nothing on a second pass: the documents it moved are queued, not failed', async () => {
+    const first = await api.retryMatching({});
+    const second = await api.retryMatching({});
+    expect(second.affected).toBeLessThan(first.affected);
   });
 });
 
@@ -278,7 +313,7 @@ describe('simulation controls', () => {
     const after = await api.getBatch('batch_archive');
     expect(after.counts.queued).toBeLessThan(before.counts.queued);
     expect(after.counts.completed + after.counts.failed).toBeGreaterThan(
-      before.counts.completed + before.counts.failed
+      before.counts.completed + before.counts.failed,
     );
   });
 });

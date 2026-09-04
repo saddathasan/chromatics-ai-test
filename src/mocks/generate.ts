@@ -21,19 +21,58 @@ export const SEED = 20260904;
 export const TOTAL_DOCUMENTS = 100_000;
 
 const GIVEN = [
-  'Amina', 'Karim', 'Nadia', 'Rafiq', 'Shirin', 'Jamal', 'Fatima', 'Hasan', 'Rumana', 'Tariq',
-  'Sadia', 'Imran', 'Nusrat', 'Bilal', 'Farida', 'Anwar', 'Laila', 'Mizan', 'Rehana', 'Sohel',
+  'Amina',
+  'Karim',
+  'Nadia',
+  'Rafiq',
+  'Shirin',
+  'Jamal',
+  'Fatima',
+  'Hasan',
+  'Rumana',
+  'Tariq',
+  'Sadia',
+  'Imran',
+  'Nusrat',
+  'Bilal',
+  'Farida',
+  'Anwar',
+  'Laila',
+  'Mizan',
+  'Rehana',
+  'Sohel',
 ];
 const FAMILY = [
-  'Rahman', 'Islam', 'Uddin', 'Khatun', 'Chowdhury', 'Ahmed', 'Hossain', 'Begum', 'Ali', 'Siddique',
+  'Rahman',
+  'Islam',
+  'Uddin',
+  'Khatun',
+  'Chowdhury',
+  'Ahmed',
+  'Hossain',
+  'Begum',
+  'Ali',
+  'Siddique',
 ];
 const DISTRICTS = [
-  'Dhaka', 'Chattogram', 'Khulna', 'Sylhet', 'Rajshahi', 'Barishal', 'Rangpur', 'Mymensingh',
-  'Cox’s Bazar', 'Kurigram',
+  'Dhaka',
+  'Chattogram',
+  'Khulna',
+  'Sylhet',
+  'Rajshahi',
+  'Barishal',
+  'Rangpur',
+  'Mymensingh',
+  'Cox’s Bazar',
+  'Kurigram',
 ];
 const PROGRAMS = [
-  'Primary Education Support', 'Maternal Health Outreach', 'Flood Relief 2026',
-  'Nutrition Supplement', 'Cyclone Shelter Registration', 'Adult Literacy',
+  'Primary Education Support',
+  'Maternal Health Outreach',
+  'Flood Relief 2026',
+  'Nutrition Supplement',
+  'Cyclone Shelter Registration',
+  'Adult Literacy',
 ];
 
 const TYPES: DocumentType[] = ['enrollment', 'medical_intake', 'id_scan', 'handwritten_note'];
@@ -58,7 +97,11 @@ const FAILURES = [
     message: 'The text-recognition service was unavailable.',
     retryable: true,
   },
-  { code: 'EXTRACTION_FAILED', message: 'Text was read but no fields could be identified.', retryable: true },
+  {
+    code: 'EXTRACTION_FAILED',
+    message: 'Text was read but no fields could be identified.',
+    retryable: true,
+  },
   {
     code: 'UNREADABLE_DOCUMENT',
     message: 'The scan is too low-contrast to read. A new scan is required.',
@@ -98,7 +141,8 @@ export type BaseDocument = {
 /** Virtual epoch: the instant the archive's clock starts. Fixed so timestamps are reproducible. */
 export const EPOCH_MS = Date.parse('2026-09-01T09:00:00.000Z');
 
-const pick = <T>(list: readonly T[], r: number): T => list[Math.floor(r * list.length) % list.length];
+const pick = <T>(list: readonly T[], r: number): T =>
+  list[Math.floor(r * list.length) % list.length];
 
 /**
  * Builds one document from its index. Outcome mix at t=0: 65% completed, 5% failed,
@@ -164,7 +208,11 @@ const NOT_APPLICABLE: Partial<Record<DocumentType, ValueField[]>> = {
 };
 
 function confident(rand: () => number, value: string, floor = CONFIDENCE.high): ExtractedField {
-  return { status: 'extracted', value, confidence: Number((floor + rand() * (1 - floor)).toFixed(2)) };
+  return {
+    status: 'extracted',
+    value,
+    confidence: Number((floor + rand() * (1 - floor)).toFixed(2)),
+  };
 }
 
 /**
@@ -232,7 +280,7 @@ function illegible(value: string): string {
 
 /** Mimics OCR confusion (l/1, O/0) so the raw value visibly differs from the normalized one. */
 function garble(value: string, rand: () => number): string {
-  const swaps: Record<string, string> = { '1': 'l', '0': 'O', '5': 'S', 'a': '@', 'o': '0' };
+  const swaps: Record<string, string> = { '1': 'l', '0': 'O', '5': 'S', a: '@', o: '0' };
   return value
     .split('')
     .map((ch) => (swaps[ch] && rand() < 0.5 ? swaps[ch] : ch))

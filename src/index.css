@@ -4,17 +4,17 @@
  * before changing any of them. Colour means state and nothing else: there is no brand
  * accent hue, so the only saturated colours below are the five statuses.
  */
-@import "tailwindcss";
+@import 'tailwindcss';
 
-@import "@fontsource/ibm-plex-sans/400.css";
-@import "@fontsource/ibm-plex-sans/500.css";
-@import "@fontsource/ibm-plex-sans/600.css";
-@import "@fontsource/ibm-plex-mono/400.css";
-@import "@fontsource/ibm-plex-mono/500.css";
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
 
 @theme {
-  --font-sans: "IBM Plex Sans", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: 'IBM Plex Sans', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --color-paper: #f9fbfe;
   --color-paper-sunk: #f0f4f7;
@@ -59,7 +59,6 @@
     --color-tint-attention: #241d10;
   }
 }
-
 
 @layer base {
   /* Tabular figures everywhere: a proportional column visibly jitters as a batch drains. */

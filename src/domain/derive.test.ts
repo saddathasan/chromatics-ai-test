@@ -39,7 +39,9 @@ describe('documentConfidence', () => {
 
   it('ignores fields that carry no confidence', () => {
     expect(
-      documentConfidence(record({ programName: { status: 'missing' }, phone: field({ confidence: 0.8 }) }))
+      documentConfidence(
+        record({ programName: { status: 'missing' }, phone: field({ confidence: 0.8 }) }),
+      ),
     ).toBe(0.8);
   });
 
@@ -52,7 +54,7 @@ describe('documentConfidence', () => {
         location: { status: 'not_applicable' },
         programName: { status: 'missing' },
         date: { status: 'missing' },
-      })
+      }),
     ).toBeUndefined();
   });
 });
@@ -86,7 +88,7 @@ describe('reviewOutcome', () => {
 
   it('does not flag a field a human already corrected', () => {
     expect(reviewOutcome(record({ phone: { status: 'corrected', value: '+880' } }))).toBe(
-      'not_required'
+      'not_required',
     );
   });
 });

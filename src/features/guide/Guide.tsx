@@ -254,11 +254,55 @@ export function Guide() {
             </p>
           </Step>
 
-          <p className={`${P} mt-6 text-ink-muted`}>
-            Two further tasks — retrying in bulk across a filter, and forcing any state on demand
-            from a developer panel — arrive with the next milestone and will be documented here when
-            they do.
-          </p>
+          <Step n={5} title="Retry in bulk">
+            <p className={P}>
+              Tick the checkbox on any row and a bar appears above the table. It offers two
+              different acts, and the difference matters.
+            </p>
+            <p className={P}>
+              <strong>Retry N selected</strong> counts only the rows that can actually move. Select
+              twelve documents of which five are retryable failures and the button says five; select
+              twelve completed ones and there is no button at all, just a line saying why. The
+              number on the button is always the number of documents that will change.
+            </p>
+            <p className={P}>
+              <strong>Retry every failure matching these filters</strong> reaches past the page you
+              can see, to everything the current filter covers — thousands of rows if the filter is
+              wide. It promises no count beforehand, deliberately: the only documents it moves are
+              retryable failures, and the archive has no way to count those within an arbitrary
+              filter without fetching all of them. It reports what actually moved when it is done.
+            </p>
+            <p className={P}>
+              Selection is scoped to the page and clears when you change filter, sort or page —
+              holding a set of ids you can no longer see is how bulk actions go wrong. To reach
+              beyond the page, use the second button.
+            </p>
+          </Step>
+
+          <Step n={6} title="Force any state in thirty seconds">
+            <p className={P}>
+              At the bottom of the dashboard, <strong>Demo controls</strong> opens a panel that
+              makes every state this interface can show reachable without waiting for it. It is here
+              for evaluation: failure handling you cannot trigger is failure handling you have to
+              take on trust.
+            </p>
+            <p className={P}>
+              <strong>Clock ×1 / ×10 / ×100</strong> fast-forwards the simulated clock, draining a
+              backlog in seconds. Because processing state is computed from that clock rather than
+              written onto records, changing the speed cannot rewrite what already happened.
+            </p>
+            <p className={P}>
+              <strong>Failure rate</strong> sets what proportion of newly uploaded documents are
+              seeded to fail — raise it, upload a folder, and watch the Recapture and Needs-review
+              lanes fill.
+            </p>
+            <p className={P}>
+              <strong>Service outage</strong> makes every read fail at the transport level, so the
+              dashboard’s error states are real rather than mocked up.{' '}
+              <strong>Reset demo data</strong> drops every human decision and retry, and rebuilds
+              the archive from its seed.
+            </p>
+          </Step>
         </section>
 
         {/* ---------------------------------------------------------------- 4 */}
