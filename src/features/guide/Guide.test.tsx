@@ -27,12 +27,14 @@ describe('Guide', () => {
     }
   });
 
-  it('walks through the four tasks that are actually built', () => {
+  it('walks through every task that is actually built', () => {
     render(<Guide />);
     const tasks = document.getElementById('tasks')!;
     expect(within(tasks).getByText(/find what needs attention/i)).toBeInTheDocument();
     expect(within(tasks).getByText(/review and fix a document/i)).toBeInTheDocument();
     expect(within(tasks).getByText(/handle a failure/i)).toBeInTheDocument();
     expect(within(tasks).getByText(/upload a batch/i)).toBeInTheDocument();
+    expect(within(tasks).getByText(/retry in bulk/i)).toBeInTheDocument();
+    expect(within(tasks).getByText(/force any state/i)).toBeInTheDocument();
   });
 });
