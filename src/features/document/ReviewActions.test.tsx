@@ -36,28 +36,32 @@ describe('ReviewActions', () => {
     render(<ReviewActions doc={doc()} pending={false} {...handlers} />);
     expect(screen.getByRole('button', { name: /confirm/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /reject/i })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /retry/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^retry$/i })).not.toBeInTheDocument();
   });
 
   it('withdraws confirm and reject once the document is confirmed', () => {
-    render(<ReviewActions doc={doc({ reviewStatus: 'confirmed' })} pending={false} {...handlers} />);
+    render(
+      <ReviewActions doc={doc({ reviewStatus: 'confirmed' })} pending={false} {...handlers} />,
+    );
     expect(screen.queryByRole('button', { name: /confirm/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /reject/i })).not.toBeInTheDocument();
     expect(screen.getByText(/confirmed/i)).toBeInTheDocument();
   });
 
   it('offers retry for a retryable failure and explains why it can be retried', () => {
-    render(<ReviewActions doc={failed(true, 'PROCESSING_TIMEOUT')} pending={false} {...handlers} />);
-    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+    render(
+      <ReviewActions doc={failed(true, 'PROCESSING_TIMEOUT')} pending={false} {...handlers} />,
+    );
+    expect(screen.getByRole('button', { name: /^retry$/i })).toBeInTheDocument();
     expect(screen.getByText(/fault in the pipeline, not in the paper/i)).toBeInTheDocument();
   });
 
   it('omits retry entirely for a dead-end failure and says what to do instead', () => {
     render(
-      <ReviewActions doc={failed(false, 'UNSUPPORTED_FORMAT')} pending={false} {...handlers} />
+      <ReviewActions doc={failed(false, 'UNSUPPORTED_FORMAT')} pending={false} {...handlers} />,
     );
     // Absent, not disabled: a disabled button invites a click that can never work.
-    expect(screen.queryByRole('button', { name: /retry/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^retry$/i })).not.toBeInTheDocument();
     expect(screen.getByText(/replace the file/i)).toBeInTheDocument();
     expect(screen.getByText(/HEIC is not a supported format/)).toBeInTheDocument();
   });
@@ -81,7 +85,9 @@ describe('ReviewActions', () => {
   it('still allows rejecting an auto-accepted document, which the transition table permits', () => {
     // High confidence is not proof: an operator who sees the extraction is wrong can still
     // reject it. Confirm is gone because there is no review outstanding to confirm.
-    render(<ReviewActions doc={doc({ reviewStatus: 'not_required' })} pending={false} {...handlers} />);
+    render(
+      <ReviewActions doc={doc({ reviewStatus: 'not_required' })} pending={false} {...handlers} />,
+    );
     expect(screen.queryByRole('button', { name: /confirm/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /reject/i })).toBeInTheDocument();
   });

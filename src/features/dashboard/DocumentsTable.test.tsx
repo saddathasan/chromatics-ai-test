@@ -104,7 +104,7 @@ describe('DocumentsTable rows', () => {
             error: { code: 'PROCESSING_TIMEOUT', message: 'timed out', retryable: true },
           }),
         ]}
-      />
+      />,
     );
     expect(screen.getByText(/failed · timed out · retryable/i)).toBeInTheDocument();
   });
@@ -127,7 +127,7 @@ describe('DocumentsTable rows', () => {
             },
           }),
         ]}
-      />
+      />,
     );
     expect(screen.getByText('completed · date missing')).toBeInTheDocument();
   });
@@ -149,7 +149,7 @@ describe('DocumentsTable rows', () => {
             },
           }),
         ]}
-      />
+      />,
     );
     expect(screen.getByText('completed · 3 fields flagged')).toBeInTheDocument();
   });
@@ -170,7 +170,7 @@ describe('DocumentsTable rows', () => {
             },
           }),
         ]}
-      />
+      />,
     );
     expect(screen.getByText('0.66')).toBeInTheDocument();
     expect(screen.getByText(/review required/i)).toBeInTheDocument();
@@ -212,7 +212,7 @@ describe('DocumentsTable rows', () => {
             },
           }),
         ]}
-      />
+      />,
     );
     expect(screen.getByText('Rahima Khatun')).toBeInTheDocument();
     expect(screen.queryByText('+8801712345402')).not.toBeInTheDocument();

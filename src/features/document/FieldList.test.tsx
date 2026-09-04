@@ -8,7 +8,12 @@ import type { NormalizedRecord } from '../../domain/types';
 /** One record carrying all six field statuses at once, which no real document does. */
 const record: NormalizedRecord = {
   documentType: { status: 'not_applicable' },
-  personName: { status: 'uncertain', value: 'Rahima Khatun', raw: 'Rahima Kha—n', confidence: 0.66 },
+  personName: {
+    status: 'uncertain',
+    value: 'Rahima Khatun',
+    raw: 'Rahima Kha—n',
+    confidence: 0.66,
+  },
   phone: { status: 'extracted', value: '+8801712345402', confidence: 0.94 },
   location: { status: 'unreadable' },
   programName: { status: 'corrected', value: 'Safe Motherhood', raw: 'Safe Mother hood' },
@@ -91,9 +96,12 @@ describe('FieldList', () => {
   it('renders the document type as words, not as the stored enum', () => {
     render(
       <FieldList
-        record={{ ...record, documentType: { status: 'extracted', value: 'id_scan', confidence: 1 } }}
+        record={{
+          ...record,
+          documentType: { status: 'extracted', value: 'id_scan', confidence: 1 },
+        }}
         onCorrect={vi.fn()}
-      />
+      />,
     );
     expect(screen.getByText('ID scan')).toBeInTheDocument();
     expect(screen.queryByText('id_scan')).not.toBeInTheDocument();

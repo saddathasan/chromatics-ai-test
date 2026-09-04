@@ -3,6 +3,7 @@
  * what needs attention now. Every count here is a filter button rather than a read-only tile -
  * a number an operator cannot act on has been deleted (docs/design/direction.md §6).
  */
+import { InfoTip } from '../../components/InfoTip';
 import { ago, count, duration } from '../../lib/format';
 import type { DocumentSearch } from '../../app/search';
 import type { Batch, DocumentStatus, ReviewStatus } from '../../domain/types';
@@ -80,7 +81,9 @@ function Sparkline({ samples }: { samples: number[] }) {
   if (samples.length < 2) return null;
   const peak = Math.max(...samples, 1);
   const step = 132 / (samples.length - 1);
-  const points = samples.map((v, i) => `${(i * step).toFixed(1)},${(24 - (v / peak) * 22).toFixed(1)}`);
+  const points = samples.map(
+    (v, i) => `${(i * step).toFixed(1)},${(24 - (v / peak) * 22).toFixed(1)}`,
+  );
   return (
     <svg
       width="132"
@@ -109,7 +112,7 @@ export function StatsStrip({ batches, updatedAt, samples, search, onFilter }: Pr
       confirmed: 0,
       rejected: 0,
       total: 0,
-    }
+    },
   );
 
   const inFlight = totals.queued + totals.processing;
@@ -125,6 +128,7 @@ export function StatsStrip({ batches, updatedAt, samples, search, onFilter }: Pr
           <h2 className="text-[clamp(24px,2.2vw,32px)]/[1.2] font-semibold">
             {count(totals.completed)}{' '}
             <span className="font-normal text-ink-muted">of {count(totals.total)} processed</span>
+            <InfoTip term="processed" />
           </h2>
           <div className="text-[11px] text-ink-muted">
             {batches.length === 1 ? batches[0].name : `${batches.length} batches`}
@@ -133,23 +137,35 @@ export function StatsStrip({ batches, updatedAt, samples, search, onFilter }: Pr
 
         <dl className="ml-auto flex flex-wrap items-end gap-6">
           <div>
-            <dt className="text-xs uppercase tracking-[0.06em] text-ink-muted">Throughput</dt>
+            <dt className="text-xs uppercase tracking-[0.06em] text-ink-muted">
+              Throughput
+              <InfoTip term="throughput" />
+            </dt>
             <dd className="font-semibold">{Math.round(throughput)}/s</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-[0.06em] text-ink-muted">Remaining</dt>
+            <dt className="text-xs uppercase tracking-[0.06em] text-ink-muted">
+              Remaining
+              <InfoTip term="eta" />
+            </dt>
             <dd className="font-semibold">
               {eta === null ? 'Nothing in flight' : `about ${duration(eta)}`}
             </dd>
           </div>
           <div className="text-rule-strong">
-            <dt className="text-xs uppercase tracking-[0.06em] text-ink-muted">Last updates</dt>
+            <dt className="text-xs uppercase tracking-[0.06em] text-ink-muted">
+              Last updates
+              <InfoTip term="sparkline" />
+            </dt>
             <dd>
               <Sparkline samples={samples} />
             </dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-[0.06em] text-ink-muted">Feed</dt>
+            <dt className="text-xs uppercase tracking-[0.06em] text-ink-muted">
+              Feed
+              <InfoTip term="feed" />
+            </dt>
             {/* Polite, not assertive: freshness is reassurance, never an interruption. */}
             <dd aria-live="polite" className="font-semibold text-processing">
               {live ? 'Live' : 'Idle'} · updated {ago(new Date(updatedAt).toISOString())}
@@ -158,7 +174,11 @@ export function StatsStrip({ batches, updatedAt, samples, search, onFilter }: Pr
         </dl>
       </div>
 
-      <div className="flex flex-wrap border-b border-rule" role="group" aria-label="Filter by state">
+      <div
+        className="flex flex-wrap border-b border-rule"
+        role="group"
+        aria-label="Filter by state"
+      >
         {CHIPS.map((chip) => {
           const active = same(chip.status, search.status) && same(chip.review, search.review);
           return (
@@ -169,9 +189,7 @@ export function StatsStrip({ batches, updatedAt, samples, search, onFilter }: Pr
               className={`flex items-baseline gap-2 whitespace-nowrap border-b-2 px-4 pt-3 pb-2.5 first:pl-0 hover:bg-paper-hover ${
                 active ? 'border-ink font-semibold' : 'border-transparent'
               } ${chip.className ?? ''}`}
-              onClick={() =>
-                onFilter({ status: chip.status, review: chip.review, page: 1 })
-              }
+              onClick={() => onFilter({ status: chip.status, review: chip.review, page: 1 })}
             >
               {chip.glyph ? (
                 <span aria-hidden="true" className="font-mono">
@@ -183,6 +201,9 @@ export function StatsStrip({ batches, updatedAt, samples, search, onFilter }: Pr
             </button>
           );
         })}
+        <span className="flex items-center pl-3">
+          <InfoTip term="chips" />
+        </span>
       </div>
     </>
   );

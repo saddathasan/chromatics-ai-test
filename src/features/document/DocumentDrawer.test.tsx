@@ -65,7 +65,7 @@ function withRow(ui: React.ReactElement) {
         intake_scan_88.pdf
       </button>
       {ui}
-    </>
+    </>,
   );
 }
 
@@ -79,7 +79,7 @@ describe('DocumentDrawer', () => {
         <button type="button" data-doc-id="doc_1">
           intake_scan_88.pdf
         </button>
-      </>
+      </>,
     );
     // Deferred a tick, so the browser's own focus fixup cannot overwrite it as the dialog leaves.
     await waitFor(() => expect(document.querySelector('[data-doc-id="doc_1"]')).toHaveFocus());

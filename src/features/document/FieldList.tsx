@@ -6,9 +6,15 @@
  * docs/design/direction.md §3.1.
  */
 import { useState } from 'react';
+import { InfoTip } from '../../components/InfoTip';
 import { confidence as fmtConfidence } from '../../lib/format';
 import { DOCUMENT_TYPE_LABEL, FIELD_LABEL } from '../../lib/labels';
-import type { DocumentType, ExtractedField, FieldStatus, NormalizedRecord } from '../../domain/types';
+import type {
+  DocumentType,
+  ExtractedField,
+  FieldStatus,
+  NormalizedRecord,
+} from '../../domain/types';
 
 type FieldKey = keyof NormalizedRecord;
 
@@ -152,8 +158,10 @@ export function FieldList({
   return (
     <section>
       <div className="flex items-center justify-between border-b border-rule py-2">
-        <h4 className="text-xs font-medium uppercase tracking-[0.06em] text-ink-muted">
+        <h4 className="flex items-center text-xs font-medium uppercase tracking-[0.06em] text-ink-muted">
           Extracted record
+          <InfoTip term="fieldStatus" />
+          <InfoTip term="worstFirst" />
         </h4>
         <label className="flex items-center gap-2 text-xs">
           <input

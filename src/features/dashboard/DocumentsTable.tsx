@@ -6,8 +6,10 @@
  */
 import { confidenceBand, documentConfidence, flaggedFields, lane } from '../../domain/derive';
 import { maskPhone } from '../../domain/derive';
+import { InfoTip } from '../../components/InfoTip';
 import { confidence as fmtConfidence, ago } from '../../lib/format';
 import { documentTypeLabel, FIELD_LABEL } from '../../lib/labels';
+import type { TermKey } from '../../lib/glossary';
 import { MarginMark, StatusMark } from './StatusMark';
 import type { SortKey } from '../../app/search';
 import type { Document } from '../../domain/types';
@@ -46,7 +48,7 @@ function rawPair(doc: Document): string {
     parts.push(
       flagged.length === 1
         ? `${FIELD_LABEL[flagged[0]].toLowerCase()} ${doc.extraction[flagged[0]].status}`
-        : `${flagged.length} fields flagged`
+        : `${flagged.length} fields flagged`,
     );
   } else if (doc.reviewStatus !== 'not_required') {
     parts.push(doc.reviewStatus.replace(/_/g, ' '));
@@ -61,11 +63,13 @@ function SortHeader({
   sort,
   onSort,
   className,
+  term,
 }: {
   field: keyof typeof SORTABLE;
   sort: SortKey | undefined;
   onSort: (sort: SortKey) => void;
   className?: string;
+  term?: TermKey;
 }) {
   const active = sort === field || sort === `-${field}`;
   const descending = sort === `-${field}`;
@@ -83,6 +87,7 @@ function SortHeader({
         {SORTABLE[field]}
         {active ? <span aria-hidden="true"> {descending ? '↓' : '↑'}</span> : null}
       </button>
+      {term ? <InfoTip term={term} /> : null}
     </th>
   );
 }
@@ -169,11 +174,18 @@ export function DocumentsTable({
             </th>
             <th scope="col" className={TH}>
               State
+              <InfoTip term="lane" />
             </th>
             <th scope="col" className={TH}>
               Person
             </th>
-            <SortHeader field="confidence" sort={sort} onSort={onSort} className={`${TH} w-44`} />
+            <SortHeader
+              field="confidence"
+              sort={sort}
+              onSort={onSort}
+              className={`${TH} w-44`}
+              term="confidence"
+            />
             <SortHeader field="uploadedAt" sort={sort} onSort={onSort} className={`${TH} w-32`} />
           </tr>
         </thead>
