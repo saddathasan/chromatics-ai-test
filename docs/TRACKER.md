@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| **Current state** | Milestone 2 merged. Mock backend serving a 100k archive over MSW (77 tests). |
+| **Current state** | Milestone 3 merged. Direction brief approved and the HTML prototype built and audited. 77 tests still green. |
 | **Branch** | `feat/doc-processing-prototype` (merge `ms/2`), cut off `main` |
-| **Next action** | Start **Milestone 3** on `ms/3-design-direction`: run `davinci`, approve the brief, build the HTML prototype. No installs expected. |
+| **Next action** | Start **Milestone 4** on `ms/4-dashboard`. Build to `docs/design/prototype.html` — it is the reference, not a suggestion. Installs approved and expected: `@fontsource/ibm-plex-sans`, `@fontsource/ibm-plex-mono`, plus the M1-deferred `@testing-library/react`, `@testing-library/jest-dom`, `jsdom` and the Vitest switch to the jsdom environment. |
 | **Blocking decisions** | None. Task-level choices proceed on the plan's recommendation and are logged. |
-| **Scheduled gates** | Milestone 3: davinci direction brief needs Saddat's approval before the prototype is built. Milestone 7: `feat → main` PR is human-reviewed. |
-| **Budget** | 14–18 h total · ~3.5 h spent (M1, M2) |
+| **Scheduled gates** | Milestone 3 gate cleared 2026-09-04 (all four questions approved). Milestone 7: `feat → main` PR is human-reviewed. |
+| **Budget** | 14–18 h total · ~5 h spent (M1, M2, M3) |
 
 ## Document map
 
@@ -39,7 +39,7 @@ mandatory), `~/.claude/docs/git-workflow.md` (per-task commits, self-merge on gr
 | 0 | Planning | `feat/doc-processing-prototype` | all | — | ✅ Done (`288eaa2`) | — | `log/2026-09-04-gap-analysis.md`, `log/2026-09-04-planning.md` |
 | 1 | Scaffold + domain | `ms/1-scaffold-domain` | §2, §5 | Milestone 1 | ✅ Merged (`e3d0654`) | merged locally, no remote | `log/2026-09-04-ms1-scaffold-domain.md` |
 | 2 | Mock backend | `ms/2-mock-backend` | §3, §4 | Milestone 2 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms2-mock-backend.md` |
-| 3 | Design direction (davinci) | `ms/3-design-direction` | §6 | Milestone 3 | ⬜ Not started · **approval gate** | — | — |
+| 3 | Design direction (davinci) | `ms/3-design-direction` | §6 | Milestone 3 | ✅ Merged · gate cleared | merged locally, no remote | `log/2026-09-04-ms3-design-direction.md` |
 | 4 | Dashboard | `ms/4-dashboard` | §5, §6.1 | Milestone 4 | ⬜ Not started | — | — |
 | 5 | Detail drawer | `ms/5-detail-drawer` | §2 (transitions), §6.2 | Milestone 5 | ⬜ Not started | — | — |
 | 6 | Upload | `ms/6-upload` | §5 (upload flow), §6.3 | Milestone 6 | ⬜ Not started | — | — |
@@ -88,14 +88,15 @@ Tick a task when its commit lands. Tick the Milestone when its PR is merged to `
 - [x] **Milestone 2 merged**
 
 ### Milestone 3 — Design direction (~1.5 h) · plan: Milestone 3 · spec: §6
-- [ ] Run `davinci` with the prompt in the plan
-- [ ] **Saddat approves the direction brief** (gate)
-- [ ] HTML prototype of dashboard + drawer
-- [ ] Commit `docs/design/direction.md` + `docs/design/prototype.html` → PR → self-merge → hub log
-- [ ] **Milestone 3 merged**
+- [x] Run `davinci` with the prompt in the plan — 21 real screens (Mobbin) + WCAG 2.2, Primer and archival accessioning practice read directly
+- [x] **Saddat approves the direction brief** (gate) — all four questions approved 2026-09-04
+- [x] HTML prototype of dashboard + drawer, audited against `anti-slop.md` (0/12 marks)
+- [x] Commit `docs/design/direction.md` + `docs/design/prototype.html` (+ `palette.mjs`) → PR → self-merge → hub log
+- [x] **Milestone 3 merged**
 
-### Milestone 4 — Dashboard (~3 h) · plan: Milestone 4 · spec: §5, §6.1
-- [ ] Tests written first: FilterBar → URL, badges with text for every value, empty/error states, polling predicate
+### Milestone 4 — Dashboard (~3 h) · plan: Milestone 4 · spec: §5, §6.1 · **design: `docs/design/prototype.html`**
+- [ ] Install and wire the M3/M1 deferrals: `@fontsource/ibm-plex-{sans,mono}`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`; Vitest → `jsdom` environment; palette tokens from `docs/design/direction.md` §4 into `src/index.css`; shadcn theme
+- [ ] Tests written first: FilterBar → URL, **lane rendered as glyph + word for all four lanes plus the raw status pair**, empty/error states, polling predicate
 - [ ] `StatsStrip` + `ProgressChart`
 - [ ] `FilterBar` bound to search params
 - [ ] `DocumentsTable` (TanStack Table, manual pagination/sort, badges, confidence)
@@ -151,6 +152,7 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
 | 2026-09-04 | 0 Planning | — | Gap analysis, decisions, spec, plan (not counted against build budget) |
 | 2026-09-04 | 1 Scaffold + domain | ~1.5 | 46 tests, typecheck/lint/build green. Deviations logged below. |
 | 2026-09-04 | 2 Mock backend | ~2 | 77 tests. Measured at 100k: generate 71ms, filtered page 6ms, batch stats 5ms. |
+| 2026-09-04 | 3 Design direction | ~1.5 | Brief + prototype + verified palette. No source touched; 77 tests still green. |
 
 ## Deviations from the plan (running log)
 
@@ -183,3 +185,29 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
   test for the service worker, which the Node suite cannot cover. M4 replaces it.
 - **M2 open risk**: the MSW **browser** path (service-worker registration) is not covered by an automated
   test — only the Node path is. First `pnpm dev` of M4 confirms it visually.
+
+- **M3**: The status column is **lane-first**, superseding spec §6.1's two badges. One column shows the
+  derived `lane` as glyph + word, with the raw `status`/`reviewStatus` pair in 11px text beneath it.
+  Two pills per row across thirty rows is unreadable, and `lane()` in `src/domain/derive.ts` already
+  encodes the question an operator actually asks. Approved at the M3 gate.
+- **M3**: **Colour is reserved for state.** There is no brand accent hue; actions are ink on paper, so
+  the only saturated colour anywhere is a status. The five status colours sit within 20% relative
+  luminance of each other on purpose, which is why the glyph-and-word rule (WCAG 2.2 SC 1.4.1, Level A)
+  is load-bearing and can never be dropped for a narrow column.
+- **M3**: Palette is **computed and verified**, not chosen by eye — `docs/design/palette.mjs` does
+  OKLCH → sRGB plus WCAG 2.2 ratios with no dependencies. Two candidates were desaturated because they
+  clipped outside sRGB. Every pair clears its target in both schemes. Re-run it if a token changes.
+- **M3**: The table row hairlines deliberately do **not** meet 3:1. SC 1.4.11 covers UI components and
+  graphical objects; a row separator is a reading aid and the data is carried entirely by text. Input
+  borders (`field`) and focus rings (`focus`) are in scope and both clear 3:1 in both schemes.
+- **M3**: Fields state the **defect in words**, with the confidence number secondary — taken from
+  archival condition-survey practice, where "good / fair / poor" grades are treated as useless and the
+  specific defect is recorded instead. This is why the six `FieldStatus` values must never collapse
+  into an em-dash in the UI.
+- **M3 open risk**: `davinci`'s source registry needs re-vetting on three entries — IBM Carbon and
+  Atlassian returned truncated or navigation-only content, and `polaris-react.shopify.com` now
+  301-redirects to `shopify.dev`. None is cited in the brief, so no decision rests on them.
+- **M3 unverified**: the prototype renders in a fallback face (a self-contained file cannot load
+  webfonts, and the Google CDN is ruled out on GDPR grounds) — resolved at M4 by the approved
+  self-hosted install. No APCA pass and no colour-blindness simulator pass; the argument for the
+  status system is structural rather than measured.
