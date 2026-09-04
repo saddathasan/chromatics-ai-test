@@ -196,8 +196,12 @@ export function UploadDialog({
             ) : null}
             {upload.phase !== 'uploading' && upload.batch ? (
               <p className="mt-2 mb-0">
+                {upload.phase === 'cancelled' ? <strong>Upload cancelled. </strong> : null}
                 {count(done)} documents are now processing in <strong>{upload.batch.name}</strong>
-                {failed > 0 ? `, and ${count(failed)} did not upload` : ''}.
+                {failed > 0 ? `, ${count(failed)} did not upload` : ''}
+                {/* Cancelling leaves files that were never attempted, and silence about them
+                    reads as "they went through". */}
+                {total > settled ? `, and ${count(total - settled)} were never sent` : ''}.
               </p>
             ) : null}
           </div>
