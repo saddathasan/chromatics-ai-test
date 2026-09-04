@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| **Current state** | Milestone 1 merged. Scaffold + domain layer green (46 tests). |
-| **Branch** | `feat/doc-processing-prototype` (merge `e3d0654`), cut off `main` |
-| **Next action** | Start **Milestone 2** on `ms/2-mock-backend` off `feat/doc-processing-prototype`. Tests first (msw/node). Approve installs: `msw`, `idb-keyval`. |
+| **Current state** | Milestone 2 merged. Mock backend serving a 100k archive over MSW (77 tests). |
+| **Branch** | `feat/doc-processing-prototype` (merge `ms/2`), cut off `main` |
+| **Next action** | Start **Milestone 3** on `ms/3-design-direction`: run `davinci`, approve the brief, build the HTML prototype. No installs expected. |
 | **Blocking decisions** | None. Task-level choices proceed on the plan's recommendation and are logged. |
 | **Scheduled gates** | Milestone 3: davinci direction brief needs Saddat's approval before the prototype is built. Milestone 7: `feat → main` PR is human-reviewed. |
-| **Budget** | 14–18 h total · ~1.5 h spent (M1) |
+| **Budget** | 14–18 h total · ~3.5 h spent (M1, M2) |
 
 ## Document map
 
@@ -38,7 +38,7 @@ mandatory), `~/.claude/docs/git-workflow.md` (per-task commits, self-merge on gr
 |---|---|---|---|---|---|---|---|
 | 0 | Planning | `feat/doc-processing-prototype` | all | — | ✅ Done (`288eaa2`) | — | `log/2026-09-04-gap-analysis.md`, `log/2026-09-04-planning.md` |
 | 1 | Scaffold + domain | `ms/1-scaffold-domain` | §2, §5 | Milestone 1 | ✅ Merged (`e3d0654`) | merged locally, no remote | `log/2026-09-04-ms1-scaffold-domain.md` |
-| 2 | Mock backend | `ms/2-mock-backend` | §3, §4 | Milestone 2 | ⬜ Not started | — | — |
+| 2 | Mock backend | `ms/2-mock-backend` | §3, §4 | Milestone 2 | ✅ Merged | merged locally, no remote | `log/2026-09-04-ms2-mock-backend.md` |
 | 3 | Design direction (davinci) | `ms/3-design-direction` | §6 | Milestone 3 | ⬜ Not started · **approval gate** | — | — |
 | 4 | Dashboard | `ms/4-dashboard` | §5, §6.1 | Milestone 4 | ⬜ Not started | — | — |
 | 5 | Detail drawer | `ms/5-detail-drawer` | §2 (transitions), §6.2 | Milestone 5 | ⬜ Not started | — | — |
@@ -76,16 +76,16 @@ Tick a task when its commit lands. Tick the Milestone when its PR is merged to `
 - [x] **Milestone 1 merged**
 
 ### Milestone 2 — Mock backend (~3 h) · plan: Milestone 2 · spec: §3, §4
-- [ ] Tests written first (msw/node): pagination edges, filters, determinism, retry, 409, bulk retry, overlay merge, counts
-- [ ] `mocks/generate.ts` (mulberry32, tables, `generateBase`, lazy `generateExtraction`)
-- [ ] `mocks/clock.ts` (virtual clock, `statusAt`, throughput/ETA)
-- [ ] `mocks/overlay.ts` (idb-keyval, debounced, reset) — install approved
-- [ ] `mocks/store.ts` (merge, filter/search/sort/paginate, counts)
-- [ ] `mocks/handlers.ts` (all routes, delay, outage 503, 409 mapping)
-- [ ] `mocks/browser.ts` + `mocks/node.ts`
-- [ ] `api/client.ts`, `keys.ts`, `queries.ts`, `mutations.ts`
-- [ ] Perf assertions pass (generate < 200 ms, list < 30 ms) → PR → self-merge → hub log
-- [ ] **Milestone 2 merged**
+- [x] Tests written first (msw/node): pagination edges, filters, determinism, retry, 409, bulk retry, overlay merge, counts
+- [x] `mocks/generate.ts` (mulberry32, tables, `generateBase`, lazy `generateExtraction`)
+- [x] `mocks/clock.ts` (virtual clock, `statusAt`, throughput/ETA)
+- [x] `mocks/overlay.ts` (idb-keyval, debounced, reset) — install approved
+- [x] `mocks/store.ts` (merge, filter/search/sort/paginate, counts)
+- [x] `mocks/handlers.ts` (all routes, delay, outage 503, 409 mapping)
+- [x] `mocks/browser.ts` + `mocks/node.ts`
+- [x] `api/client.ts`, `keys.ts`, `queries.ts`, `mutations.ts`
+- [x] Perf assertions pass (generate < 200 ms, list < 30 ms) → PR → self-merge → hub log
+- [x] **Milestone 2 merged**
 
 ### Milestone 3 — Design direction (~1.5 h) · plan: Milestone 3 · spec: §6
 - [ ] Run `davinci` with the prompt in the plan
@@ -150,6 +150,7 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
 |---|---|---|---|
 | 2026-09-04 | 0 Planning | — | Gap analysis, decisions, spec, plan (not counted against build budget) |
 | 2026-09-04 | 1 Scaffold + domain | ~1.5 | 46 tests, typecheck/lint/build green. Deviations logged below. |
+| 2026-09-04 | 2 Mock backend | ~2 | 77 tests. Measured at 100k: generate 71ms, filtered page 6ms, batch stats 5ms. |
 
 ## Deviations from the plan (running log)
 
@@ -164,3 +165,21 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
   and human rejections go to `recapture`. Spec §2 wording is superseded by `src/domain/derive.ts`.
 - **M1**: `documentConfidence` is the min over fields that **carry** a confidence (missing/unreadable
   fields have none and are excluded); they still force `needs_review` through `reviewOutcome`.
+
+- **M2**: The mock's processing state is **derived from a virtual clock**, not advanced by a scheduler.
+  Each document carries `startOffset` and `duration`; status is a function of time, so 100,000 documents
+  progress with zero writes and a reload resumes exactly where it left off. The clock accumulates elapsed
+  time rather than reading from a fixed origin, so changing the speed dial cannot rewrite the past.
+- **M2**: `Patch` (the overlay record) is **structurally unable to hold `status`, timestamps or `error`**.
+  An earlier version stored the whole mutated document, which froze a retried document at `queued` forever.
+  The type now permits only `base`, `reviewStatus` (when a human decided), `attempts` and `extraction`.
+- **M2**: `list()` filters on cheap derived state and materializes **only the returned page**. Filtering on
+  full documents cost 65ms per request on the main thread; this is 6ms. Same fix applied to `batchStats`.
+- **M2**: MSW handler paths are origin-agnostic (`*/api/...`) so one set of handlers serves the browser
+  (relative fetch) and the Node test runner (absolute fetch). `src/api/client.ts` prefixes an origin under Node.
+- **M2**: `api/queries.ts` and `api/mutations.ts` (React Query hooks) **deferred to M4/M5**, where their
+  consumers live. M2 ships `api/client.ts` only. The M4 checklist item "polling rules in api/queries.ts" stands.
+- **M2**: The dashboard placeholder now reads real batch counts and a document page. It is a browser smoke
+  test for the service worker, which the Node suite cannot cover. M4 replaces it.
+- **M2 open risk**: the MSW **browser** path (service-worker registration) is not covered by an automated
+  test — only the Node path is. First `pnpm dev` of M4 confirms it visually.
