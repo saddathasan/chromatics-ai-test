@@ -39,7 +39,11 @@ export function FilterBar({ search, batches, onChange }: Props) {
   }, [q, search.q, onChange]);
 
   const filtered = Boolean(
-    search.q || search.status?.length || search.review?.length || search.type?.length || search.batch
+    search.q ||
+    search.status?.length ||
+    search.review?.length ||
+    search.type?.length ||
+    search.batch,
   );
 
   return (

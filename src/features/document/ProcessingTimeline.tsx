@@ -23,7 +23,12 @@ function steps(doc: Document): Step[] {
     });
   }
   if (doc.startedAt) {
-    out.push({ mark: '✓', className: 'text-completed', text: 'Processing started', at: doc.startedAt });
+    out.push({
+      mark: '✓',
+      className: 'text-completed',
+      text: 'Processing started',
+      at: doc.startedAt,
+    });
   } else {
     out.push({ mark: '▸', className: 'text-processing', text: 'Waiting in the queue' });
   }

@@ -37,7 +37,7 @@ describe('StatsStrip', () => {
   it('leads with how much is left, summed across every batch', () => {
     render(<StatsStrip {...props} batches={[batch(), batch({}, { id: 'b2' })]} />);
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      '172,050 of 200,000 processed'
+      '172,050 of 200,000 processed',
     );
   });
 
@@ -52,7 +52,7 @@ describe('StatsStrip', () => {
       <StatsStrip
         {...props}
         batches={[batch({ queued: 0, processing: 0 }, { etaSeconds: null, throughputPerSec: 0 })]}
-      />
+      />,
     );
     expect(screen.getByText(/nothing in flight/i)).toBeInTheDocument();
   });
@@ -87,7 +87,7 @@ describe('StatsStrip', () => {
     render(<StatsStrip {...props} search={{ page: 1, review: ['needs_review'] }} />);
     expect(screen.getByRole('button', { name: /needs review/i })).toHaveAttribute(
       'aria-pressed',
-      'true'
+      'true',
     );
     expect(screen.getByRole('button', { name: /^all/i })).toHaveAttribute('aria-pressed', 'false');
   });
@@ -100,7 +100,7 @@ describe('StatsStrip', () => {
       <StatsStrip
         {...props}
         batches={[batch({ queued: 0, processing: 0 }, { throughputPerSec: 0 })]}
-      />
+      />,
     );
     expect(screen.getByText(/^idle · updated/i)).toBeInTheDocument();
   });

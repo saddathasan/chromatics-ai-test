@@ -4,6 +4,7 @@
  * cannot search is not a status display.
  */
 import { useMemo, useState } from 'react';
+import { InfoTip } from '../../components/InfoTip';
 import { count } from '../../lib/format';
 import type { QueueItem, QueueState } from './queue';
 
@@ -72,6 +73,7 @@ export function QueueList({ items }: { items: QueueItem[] }) {
               }}
             />
             Failed only ({count(failed)})
+            <InfoTip term="queueFailed" />
           </label>
         ) : null}
         <input

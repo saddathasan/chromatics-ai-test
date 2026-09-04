@@ -88,9 +88,11 @@ export function DocumentDrawer({
         </div>
       ) : (
         <>
-          <div className={`flex items-baseline gap-2 border-b border-rule-strong px-6 py-3 ${
+          <div
+            className={`flex items-baseline gap-2 border-b border-rule-strong px-6 py-3 ${
               lane(doc) === 'auto_accepted' ? 'bg-paper-sunk' : 'bg-tint-attention'
-            }`}>
+            }`}
+          >
             <StatusMark lane={lane(doc)} />
             <span className="text-[11px] text-ink-muted">{subtitle(doc)}</span>
           </div>

@@ -4,6 +4,7 @@
  * nothing here needs behaviour a library would have to supply.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { InfoTip } from '../../components/InfoTip';
 import { count, duration } from '../../lib/format';
 import { QueueList } from './QueueList';
 import { useFileSelection, useUploadQueue } from './useUpload';
@@ -149,6 +150,7 @@ export function UploadDialog({
                       <summary className="inline cursor-pointer">
                         {count(selection.skipped.length)} skipped — see why
                       </summary>
+                      <InfoTip term="validation" />
                       <span className="ml-2 text-ink-muted">{summary.join(' · ')}</span>
                     </details>
                   </>
@@ -178,6 +180,7 @@ export function UploadDialog({
                   : ''}
                 {failed > 0 ? ` · ${count(failed)} failed` : ''}
               </span>
+              <InfoTip term="uploadRate" />
             </p>
             <progress
               value={settled}

@@ -29,12 +29,12 @@ export function Dashboard() {
     (next: Partial<DocumentSearch>) => {
       void navigate({ search: (prev) => ({ ...prev, ...next }) });
     },
-    [navigate]
+    [navigate],
   );
 
   const completed = useMemo(
     () => (batches.data ?? []).reduce((sum, b) => sum + b.counts.completed, 0),
-    [batches.data]
+    [batches.data],
   );
 
   // The sparkline is this session's own observation: how many documents finished between polls.
@@ -59,11 +59,15 @@ export function Dashboard() {
         batch: undefined,
         page: 1,
       }),
-    [patch]
+    [patch],
   );
 
   const hasFilters = Boolean(
-    search.q || search.status?.length || search.review?.length || search.type?.length || search.batch
+    search.q ||
+    search.status?.length ||
+    search.review?.length ||
+    search.type?.length ||
+    search.batch,
   );
   const total = documents.data?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));

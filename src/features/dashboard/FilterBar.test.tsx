@@ -47,11 +47,7 @@ describe('FilterBar', () => {
   it('drops the type filter when All types is chosen', () => {
     const onChange = vi.fn();
     render(
-      <FilterBar
-        search={{ ...search, type: ['id_scan'] }}
-        batches={batches}
-        onChange={onChange}
-      />
+      <FilterBar search={{ ...search, type: ['id_scan'] }} batches={batches} onChange={onChange} />,
     );
     fireEvent.change(screen.getByRole('combobox', { name: /type/i }), { target: { value: '' } });
     expect(onChange).toHaveBeenCalledWith({ type: undefined, page: 1 });
@@ -70,7 +66,7 @@ describe('FilterBar', () => {
   it('shows Clear only when something is filtered, and clears every axis at once', () => {
     const onChange = vi.fn();
     const { rerender } = render(
-      <FilterBar search={search} batches={batches} onChange={onChange} />
+      <FilterBar search={search} batches={batches} onChange={onChange} />,
     );
     expect(screen.queryByRole('button', { name: /^clear$/i })).not.toBeInTheDocument();
 
@@ -79,7 +75,7 @@ describe('FilterBar', () => {
         search={{ page: 3, q: 'intake', type: ['id_scan'], status: ['failed'], batch: 'b1' }}
         batches={batches}
         onChange={onChange}
-      />
+      />,
     );
     fireEvent.click(screen.getByRole('button', { name: /^clear$/i }));
     expect(onChange).toHaveBeenCalledWith({
