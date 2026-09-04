@@ -213,12 +213,21 @@ export function generateExtraction(base: BaseDocument): NormalizedRecord {
       } else if (roll < 0.85) {
         record[field] = { status: 'missing' };
       } else {
-        record[field] = { status: 'unreadable', raw: garble(String(record[field].value ?? ''), rand) };
+        record[field] = { status: 'unreadable', raw: illegible(String(record[field].value ?? '')) };
       }
     }
   }
 
   return record;
+}
+
+/**
+ * What OCR hands back when it fails outright. `unreadable` has to look unreadable: a raw value
+ * that a person can plainly read makes the status a lie, and this archive's whole claim is that
+ * it shows uncertainty honestly.
+ */
+function illegible(value: string): string {
+  return value.replace(/\S/g, (ch) => (ch.charCodeAt(0) % 3 === 0 ? '▯' : ch === ' ' ? ' ' : '·'));
 }
 
 /** Mimics OCR confusion (l/1, O/0) so the raw value visibly differs from the normalized one. */
