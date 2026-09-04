@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| **Current state** | Planning complete and committed. No application code yet. |
-| **Branch** | `feat/doc-processing-prototype` (commit `288eaa2`), cut off `main` |
-| **Next action** | Start **Milestone 1** on `ms/1-scaffold-domain` off `feat/doc-processing-prototype`. Tests first. |
+| **Current state** | Milestone 1 merged. Scaffold + domain layer green (46 tests). |
+| **Branch** | `feat/doc-processing-prototype` (merge `e3d0654`), cut off `main` |
+| **Next action** | Start **Milestone 2** on `ms/2-mock-backend` off `feat/doc-processing-prototype`. Tests first (msw/node). Approve installs: `msw`, `idb-keyval`. |
 | **Blocking decisions** | None. Task-level choices proceed on the plan's recommendation and are logged. |
 | **Scheduled gates** | Milestone 3: davinci direction brief needs Saddat's approval before the prototype is built. Milestone 7: `feat → main` PR is human-reviewed. |
-| **Budget** | 14–18 h total · 0 h spent on implementation |
+| **Budget** | 14–18 h total · ~1.5 h spent (M1) |
 
 ## Document map
 
@@ -37,7 +37,7 @@ mandatory), `~/.claude/docs/git-workflow.md` (per-task commits, self-merge on gr
 | # | Milestone | Branch | Spec refs | Plan section | Status | PR | Session log |
 |---|---|---|---|---|---|---|---|
 | 0 | Planning | `feat/doc-processing-prototype` | all | — | ✅ Done (`288eaa2`) | — | `log/2026-09-04-gap-analysis.md`, `log/2026-09-04-planning.md` |
-| 1 | Scaffold + domain | `ms/1-scaffold-domain` | §2, §5 | Milestone 1 | ⬜ Not started | — | — |
+| 1 | Scaffold + domain | `ms/1-scaffold-domain` | §2, §5 | Milestone 1 | ✅ Merged (`e3d0654`) | merged locally, no remote | `log/2026-09-04-ms1-scaffold-domain.md` |
 | 2 | Mock backend | `ms/2-mock-backend` | §3, §4 | Milestone 2 | ⬜ Not started | — | — |
 | 3 | Design direction (davinci) | `ms/3-design-direction` | §6 | Milestone 3 | ⬜ Not started · **approval gate** | — | — |
 | 4 | Dashboard | `ms/4-dashboard` | §5, §6.1 | Milestone 4 | ⬜ Not started | — | — |
@@ -65,15 +65,15 @@ Status legend: ⬜ Not started · 🔶 In progress · 🔴 Blocked · ✅ Merged
 Tick a task when its commit lands. Tick the Milestone when its PR is merged to `feat`.
 
 ### Milestone 1 — Scaffold + domain (~2 h) · plan: Milestone 1 · spec: §2, §5
-- [ ] Tests written first: `transitions.test.ts`, `derive.test.ts` (red)
-- [ ] Scaffold Vite + React + TS (pnpm), Tailwind 4, shadcn init, TanStack Router + Query, Vitest + Testing Library, ESLint/Prettier — each install approved
-- [ ] Root layout, `/` route with typed search-param schema, Query provider
-- [ ] `domain/types.ts`
-- [ ] `domain/transitions.ts` (green)
-- [ ] `domain/derive.ts` (green)
-- [ ] File header + export comments on every file
-- [ ] `pnpm test` · `pnpm typecheck` · `pnpm lint` green → PR `ms/1 → feat` → self-merge → hub log
-- [ ] **Milestone 1 merged**
+- [x] Tests written first: `transitions.test.ts`, `derive.test.ts` (red)
+- [x] Scaffold Vite + React + TS (pnpm), Tailwind 4, shadcn init, TanStack Router + Query, Vitest + Testing Library, ESLint/Prettier — each install approved
+- [x] Root layout, `/` route with typed search-param schema, Query provider
+- [x] `domain/types.ts`
+- [x] `domain/transitions.ts` (green)
+- [x] `domain/derive.ts` (green)
+- [x] File header + export comments on every file
+- [x] `pnpm test` · `pnpm typecheck` · `pnpm lint` green → PR `ms/1 → feat` → self-merge → hub log
+- [x] **Milestone 1 merged**
 
 ### Milestone 2 — Mock backend (~3 h) · plan: Milestone 2 · spec: §3, §4
 - [ ] Tests written first (msw/node): pagination edges, filters, determinism, retry, 409, bulk retry, overlay merge, counts
@@ -149,3 +149,18 @@ Never cut: per-field status, transition table + tests, retryable errors, URL sta
 | Date | Milestone | Hours | Notes |
 |---|---|---|---|
 | 2026-09-04 | 0 Planning | — | Gap analysis, decisions, spec, plan (not counted against build budget) |
+| 2026-09-04 | 1 Scaffold + domain | ~1.5 | 46 tests, typecheck/lint/build green. Deviations logged below. |
+
+## Deviations from the plan (running log)
+
+- **M1**: Vite 8 template ships **oxlint**, not ESLint — kept it, no ESLint installed.
+- **M1**: shadcn and Testing Library + jsdom **deferred to M4** (shadcn theme depends on the M3
+  design direction; nothing to render-test yet). `pnpm test` currently runs in the `node` environment;
+  M4 must switch Vitest to `jsdom` and install `@testing-library/react`, `@testing-library/jest-dom`, `jsdom`.
+- **M1**: TanStack Router routes are **code-based**, not file-based — one screen plus a drawer does not
+  justify a codegen step. Search params validated by a hand-written parser (`src/app/search.ts`), no zod.
+- **M1**: `lane()` routes a **retryable failure to `needs_review`**, not `auto_accepted` as spec §2 implied.
+  A retryable failure needs a human click, so it belongs in the attention bucket; only dead-end failures
+  and human rejections go to `recapture`. Spec §2 wording is superseded by `src/domain/derive.ts`.
+- **M1**: `documentConfidence` is the min over fields that **carry** a confidence (missing/unreadable
+  fields have none and are excluded); they still force `needs_review` through `reviewOutcome`.
