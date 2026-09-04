@@ -249,6 +249,18 @@ describe('batches', () => {
     expect((await api.addDocuments(batch.id, files)).added).toBe(0);
     expect((await api.getBatch(batch.id)).counts.total).toBe(2);
   });
+
+  it('mints its own document ids rather than echoing the client key back', async () => {
+    const batch = await api.createBatch('Kurigram drive');
+    // A client key is a path, a size and a file modification time - an upload-side identity
+    // that has no business appearing in the identifier column of an archive.
+    await api.addDocuments(batch.id, [
+      { clientKey: 'kurigram/intake.pdf:112:1788525508618', name: 'intake.pdf', size: 112, mimeType: 'application/pdf' },
+    ]);
+    const page = await api.listDocuments({ batch: batch.id });
+    expect(page.items[0].id).not.toContain('1788525508618');
+    expect(page.items[0].fileName).toBe('intake.pdf');
+  });
 });
 
 describe('simulation controls', () => {
